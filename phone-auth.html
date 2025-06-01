@@ -1,19 +1,103 @@
-<!-- File: phone-auth.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CodeCafe - Phone Login</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    input {
+      width: 280px;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 300px;
+      padding: 12px;
+      margin: 10px 0;
+      background-color: #ff6a00;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #ff8c1a;
+    }
+
+    #recaptcha-container {
+      margin: 15px 0;
+    }
+
+    /* Toast style */
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      font-size: 17px;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
   <h2>Login with Phone Number</h2>
-  <input type="text" id="phoneNumber" placeholder="+911234567890" />
+
+  <input
+    type="text"
+    id="phoneNumber"
+    placeholder="+91 12345 67890"
+    maxlength="13"
+    autocomplete="tel"
+  />
+
   <div id="recaptcha-container"></div>
+
   <button onclick="sendOTP()">Send OTP</button>
 
-  <input type="text" id="otp" placeholder="Enter OTP" />
+  <input type="text" id="otp" placeholder="Enter OTP" maxlength="6" />
+
   <button onclick="verifyOTP()">Verify OTP</button>
+
+  <div id="toast">OTP sent successfully!</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
@@ -36,34 +120,89 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
 
-    window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-      'size': 'normal',
-      'callback': () => console.log('reCAPTCHA solved'),
-    }, auth);
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "normal",
+        callback: () => console.log("reCAPTCHA solved"),
+        "expired-callback": () => {
+          alert("reCAPTCHA expired, please solve it again.");
+        }
+      },
+      auth
+    );
 
     let confirmationResult;
 
+    // Show toast function
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.className = "show";
+      setTimeout(() => {
+        toast.className = toast.className.replace("show", "");
+      }, 3000);
+    }
+
+    // Validate Indian phone number format
+    function isValidIndianPhone(phone) {
+      // Remove spaces and dashes
+      const cleaned = phone.replace(/\s|-/g, "");
+      // Must start with +91 and 10 digits after it
+      const pattern = /^\+91[6-9]\d{9}$/;
+      return pattern.test(cleaned);
+    }
+
     window.sendOTP = () => {
-      const phoneNumber = document.getElementById('phoneNumber').value;
+      const phoneNumberInput = document.getElementById("phoneNumber");
+      const phoneNumber = phoneNumberInput.value.trim();
+
+      if (!isValidIndianPhone(phoneNumber)) {
+        alert("Please enter a valid Indian phone number starting with +91 and 10 digits.");
+        phoneNumberInput.focus();
+        return;
+      }
+
       signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
         .then((result) => {
           confirmationResult = result;
-          alert("OTP sent!");
-        }).catch((error) => {
-          alert(error.message);
+          showToast("OTP sent successfully!");
+        })
+        .catch((error) => {
+          alert("Error sending OTP: " + error.message);
+          // Reset reCAPTCHA on error so user can retry
+          window.recaptchaVerifier.render().then(widgetId => {
+            grecaptcha.reset(widgetId);
+          });
         });
-    }
+    };
 
     window.verifyOTP = () => {
-      const otp = document.getElementById('otp').value;
-      confirmationResult.confirm(otp)
+      const otpInput = document.getElementById("otp");
+      const otp = otpInput.value.trim();
+
+      if (otp.length !== 6) {
+        alert("Please enter a valid 6-digit OTP.");
+        otpInput.focus();
+        return;
+      }
+
+      if (!confirmationResult) {
+        alert("Please request an OTP first.");
+        return;
+      }
+
+      confirmationResult
+        .confirm(otp)
         .then((result) => {
           alert("Phone login successful!");
+          // Redirect to your main app page after login success
           window.location.href = "index.html";
-        }).catch((error) => {
-          alert("Incorrect OTP!");
+        })
+        .catch(() => {
+          alert("Incorrect OTP. Please try again.");
         });
-    }
+    };
   </script>
 </body>
 </html>

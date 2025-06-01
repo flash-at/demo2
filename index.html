@@ -3,45 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Firebase Login</title>
+  <title>Modern Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="form-wrapper">
-    <div class="form-box login active">
-      <h2>Login</h2>
-      <form id="loginForm">
-        <div class="input-box">
-          <input type="email" id="loginEmail" required />
-          <label>Email</label>
-        </div>
-        <div class="input-box">
-          <input type="password" id="loginPassword" required />
-          <label>Password</label>
-        </div>
-        <button type="submit">Login</button>
-        <p class="switch-form">Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
-      </form>
-    </div>
+  <div class="container">
+    <div class="form-container" id="formBox">
+      <div class="form-toggle">
+        <button id="loginToggle" class="active">Login</button>
+        <button id="signupToggle">Sign Up</button>
+      </div>
 
-    <div class="form-box signup">
-      <h2>Sign Up</h2>
-      <form id="signupForm">
-        <div class="input-box">
-          <input type="email" id="signupEmail" required />
+      <!-- Login Form -->
+      <form id="loginForm" class="form active">
+        <h2>Login</h2>
+        <div class="input-group">
           <label>Email</label>
+          <input type="email" id="loginEmail" required />
         </div>
-        <div class="input-box">
-          <input type="password" id="signupPassword" required />
+        <div class="input-group">
           <label>Password</label>
+          <input type="password" id="loginPassword" required />
         </div>
-        <button type="submit">Sign Up</button>
-        <p class="switch-form">Already have an account? <a href="#" id="show-login">Login</a></p>
+        <button type="submit" class="btn">Login</button>
+
+        <div class="divider"><span>or</span></div>
+
+        <button type="button" id="googleLogin" class="btn google">Login with Google</button>
+        <button type="button" id="phoneLogin" class="btn phone">Login with Phone</button>
+      </form>
+
+      <!-- Sign-Up Form -->
+      <form id="signupForm" class="form">
+        <h2>Create Account</h2>
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="signupEmail" required />
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="signupPassword" required />
+        </div>
+        <button type="submit" class="btn">Sign Up</button>
+
+        <div class="divider"><span>or</span></div>
+
+        <button type="button" id="googleSignup" class="btn google">Sign Up with Google</button>
+        <button type="button" id="phoneSignup" class="btn phone">Sign Up with Phone</button>
       </form>
     </div>
   </div>
 
-  <!-- Firebase JS (Separate file) -->
   <script type="module" src="register.js"></script>
+  <script>
+    // Toggle forms (optional enhancement without JS modules)
+    const loginToggle = document.getElementById("loginToggle");
+    const signupToggle = document.getElementById("signupToggle");
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+
+    loginToggle.addEventListener("click", () => {
+      loginToggle.classList.add("active");
+      signupToggle.classList.remove("active");
+      loginForm.classList.add("active");
+      signupForm.classList.remove("active");
+    });
+
+    signupToggle.addEventListener("click", () => {
+      signupToggle.classList.add("active");
+      loginToggle.classList.remove("active");
+      signupForm.classList.add("active");
+      loginForm.classList.remove("active");
+    });
+  </script>
 </body>
 </html>

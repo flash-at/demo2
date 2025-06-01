@@ -5,80 +5,81 @@
 }
 
 body {
-  height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #4facfe, #00f2fe);
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  height: 100vh;
 }
 
-.login-container {
-  background: white;
-  padding: 2rem 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+.form-wrapper {
   width: 100%;
   max-width: 400px;
+  background-color: #fff;
+  padding: 40px 30px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.login-container h2 {
+.form-box {
+  display: none;
+}
+
+.form-box h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 25px;
   color: #333;
 }
 
-.input-group {
-  margin-bottom: 1.2rem;
+.input-box {
+  position: relative;
+  margin-bottom: 20px;
 }
 
-.input-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #555;
-}
-
-.input-group input {
+.input-box input {
   width: 100%;
-  padding: 0.6rem;
+  padding: 10px 12px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
   outline: none;
-  transition: border 0.3s;
+  font-size: 14px;
 }
 
-.input-group input:focus {
-  border-color: #667eea;
+.input-box label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #fff;
+  padding: 0 5px;
+  font-size: 13px;
+  color: #666;
 }
 
 button {
   width: 100%;
-  padding: 0.75rem;
-  background-color: #667eea;
+  padding: 10px;
+  background-color: #4facfe;
   border: none;
-  border-radius: 8px;
   color: white;
-  font-size: 1rem;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
   transition: background 0.3s;
 }
 
 button:hover {
-  background-color: #5a67d8;
+  background-color: #00c6ff;
 }
 
-.signup-link {
-  margin-top: 1rem;
+.switch-form {
   text-align: center;
-  font-size: 0.9rem;
+  margin-top: 15px;
+  font-size: 14px;
 }
 
-.signup-link a {
-  color: #667eea;
+.switch-form a {
+  color: #4facfe;
   text-decoration: none;
-}
-
-.signup-link a:hover {
-  text-decoration: underline;
 }

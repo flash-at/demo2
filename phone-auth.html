@@ -7,117 +7,99 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 30px auto;
       padding: 20px;
-      background-color: #fafafa;
-      color: #222;
+      background: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h2 {
-      margin-bottom: 16px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
     }
-    .phone-input-container {
-      display: flex;
-      width: 300px;
-      margin: 8px 0 16px;
-      border-radius: 8px;
-      overflow: hidden;
-      background-color: #fff;
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 15px;
       border: 1px solid #ccc;
+      border-radius: 4px;
       font-size: 1rem;
-      color: #000;
-    }
-    .phone-code {
-      padding: 12px 10px;
-      background-color: #f0f0f0;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      border-right: 1px solid #ccc;
-      min-width: 55px;
-    }
-    #phoneNumber {
-      flex: 1;
-      border: none;
-      font-size: 1rem;
-      padding: 12px 10px;
-      outline: none;
-      color: #000;
-    }
-    #otp {
-      width: 300px;
-      padding: 12px 10px;
-      font-size: 1rem;
-      margin-bottom: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      outline: none;
     }
     button {
-      background-color: #0066cc;
-      border: none;
-      padding: 12px 20px;
-      margin: 5px 10px 15px 0;
-      border-radius: 8px;
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
       color: white;
+      border: none;
+      border-radius: 4px;
       font-size: 1rem;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      margin-bottom: 10px;
     }
     button:hover {
-      background-color: #004999;
+      background-color: #0056b3;
     }
     #recaptcha-container {
-      margin-bottom: 16px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: center;
     }
+    #backBtn {
+      background-color: #6c757d;
+    }
+    #backBtn:hover {
+      background-color: #5a6268;
+    }
+    /* Toast message style */
     #toast {
       visibility: hidden;
       min-width: 250px;
-      margin-left: -125px;
-      background-color: #4caf50;
+      background-color: #333;
       color: #fff;
       text-align: center;
-      border-radius: 8px;
-      padding: 12px 16px;
+      border-radius: 4px;
+      padding: 14px;
       position: fixed;
       z-index: 1;
       left: 50%;
       bottom: 30px;
+      transform: translateX(-50%);
       font-size: 1rem;
-      opacity: 0;
-      transition: opacity 0.5s ease-in-out, visibility 0.5s;
     }
     #toast.show {
       visibility: visible;
-      opacity: 1;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein {
+      from { bottom: 0; opacity: 0; }
+      to { bottom: 30px; opacity: 1; }
+    }
+    @keyframes fadeout {
+      from { bottom: 30px; opacity: 1; }
+      to { bottom: 0; opacity: 0; }
     }
   </style>
 </head>
 <body>
+
   <h2>Login with Phone Number</h2>
 
-  <div class="phone-input-container">
-    <div class="phone-code">+91</div>
-    <input
-      type="tel"
-      id="phoneNumber"
-      placeholder="7013295712"
-      maxlength="10"
-      autocomplete="tel"
-    />
-  </div>
+  <label for="phoneNumber">Phone Number (+91):</label>
+  <input type="text" id="phoneNumber" maxlength="10" placeholder="7013295712" value="7013295712" />
 
   <div id="recaptcha-container"></div>
 
   <button id="sendOtpBtn">Send OTP</button>
-  <button id="backBtn">Back</button>
 
-  <br />
+  <input type="text" id="otp" maxlength="6" placeholder="Enter OTP" />
 
-  <input type="text" id="otp" placeholder="Enter OTP" maxlength="6" />
   <button id="verifyOtpBtn">Verify OTP</button>
 
-  <div id="toast">OTP sent successfully!</div>
+  <button id="backBtn">Back</button>
+
+  <div id="toast"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
@@ -127,7 +109,7 @@
       signInWithPhoneNumber
     } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-    // Your firebaseConfig here
+    // ======= Replace these with your Firebase project config =======
     const firebaseConfig = {
       apiKey: "YOUR_VALID_API_KEY",
       authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -139,35 +121,40 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
+    const auth = getAuth(app);
 
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      "recaptcha-container",
-      {
-        size: "normal",
-        callback: () => console.log("reCAPTCHA solved"),
-        "expired-callback": () => {
-          alert("reCAPTCHA expired, please solve it again.");
-        }
+    // Setup reCAPTCHA
+    window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+      'size': 'normal',
+      'callback': (response) => {
+        // reCAPTCHA solved - allow send OTP button to work
+        console.log('reCAPTCHA solved');
       },
-      auth
-    );
+      'expired-callback': () => {
+        alert("reCAPTCHA expired, please verify again.");
+      }
+    }, auth);
+
+    // Render the reCAPTCHA widget explicitly
+    window.recaptchaVerifier.render().then(widgetId => {
+      window.recaptchaWidgetId = widgetId;
+    });
 
     let confirmationResult;
 
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      toast.textContent = message;
-      toast.className = "show";
+    // Toast popup helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'show';
       setTimeout(() => {
-        toast.className = toast.className.replace("show", "");
+        toast.className = toast.className.replace('show', '');
       }, 3000);
     }
 
+    // Validate Indian phone number (10 digits, starts with 6-9)
     function isValidIndianPhone(phone) {
-      // Phone should be 10 digits starting with 6-9
-      const pattern = /^[6-9]\d{9}$/;
-      return pattern.test(phone);
+      return /^[6-9]\d{9}$/.test(phone);
     }
 
     document.getElementById("sendOtpBtn").addEventListener("click", () => {
@@ -189,10 +176,10 @@
         })
         .catch((error) => {
           alert("Error sending OTP: " + error.message);
-          // Reset reCAPTCHA in case of error
-          window.recaptchaVerifier.render().then((widgetId) => {
-            grecaptcha.reset(widgetId);
-          });
+          // Reset reCAPTCHA on error so user can retry
+          if (window.grecaptcha && window.recaptchaWidgetId !== undefined) {
+            grecaptcha.reset(window.recaptchaWidgetId);
+          }
         });
     });
 
@@ -200,31 +187,36 @@
       const otpInput = document.getElementById("otp");
       const otp = otpInput.value.trim();
 
-      if (otp.length !== 6) {
+      if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
         alert("Please enter a valid 6-digit OTP.");
         otpInput.focus();
         return;
       }
 
       if (!confirmationResult) {
-        alert("Please request an OTP first.");
+        alert("Please send OTP first.");
         return;
       }
 
-      confirmationResult
-        .confirm(otp)
-        .then(() => {
-          alert("Phone login successful!");
-          window.location.href = "index.html"; // Redirect after success
+      confirmationResult.confirm(otp)
+        .then((result) => {
+          showToast("Phone login successful!");
+          // Redirect to your app main page or do other stuff
+          setTimeout(() => {
+            window.location.href = "index.html"; // Change as needed
+          }, 1500);
         })
-        .catch(() => {
-          alert("Incorrect OTP. Please try again.");
+        .catch((error) => {
+          alert("Incorrect OTP or verification failed!");
+          console.error(error);
         });
     });
 
+    // Back button
     document.getElementById("backBtn").addEventListener("click", () => {
-      window.history.back();
+      window.location.href = "https://mahesh06.me/demo2/";
     });
   </script>
+
 </body>
 </html>

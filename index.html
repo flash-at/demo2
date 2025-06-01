@@ -2,37 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CodeCafe - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+    }
+
     body {
       background: linear-gradient(to right, #1e3c72, #2a5298);
-      height: 100vh; display: flex; justify-content: center; align-items: center; color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
     }
+
     .container {
-      background: #ffffff10; padding: 2rem; border-radius: 12px;
-      backdrop-filter: blur(8px); box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-      width: 100%; max-width: 400px; transition: all 0.4s ease;
+      background: #ffffff10;
+      padding: 2rem;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+      transition: all 0.4s ease;
     }
-    h2 { text-align: center; margin-bottom: 1.5rem; font-weight: 600; }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
     input {
-      width: 100%; padding: 0.8rem; margin-bottom: 1rem;
-      border: none; border-radius: 6px;
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 6px;
     }
+
     button {
-      width: 100%; padding: 0.8rem; background: #ff6a00;
-      border: none; border-radius: 6px; font-weight: bold;
-      cursor: pointer; color: white; transition: background 0.3s ease;
+      width: 100%;
+      padding: 0.8rem;
+      background: #ff6a00;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      transition: background 0.3s ease;
     }
-    button:hover { background: #ff8c1a; }
-    .form-toggle { text-align: center; margin-top: 1rem; }
-    .form-toggle a { color: #ffd; text-decoration: underline; cursor: pointer; }
+
+    button:hover {
+      background: #ff8c1a;
+    }
+
+    .form-toggle {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .form-toggle a {
+      color: #ffd;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
     .nav-options {
-      display: flex; flex-direction: column; gap: 10px; margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
     }
-    .nav-options button { background-color: #444; }
+
+    .nav-options button {
+      background-color: #444;
+    }
+
+    /* Reset password link style */
+    .forgot-password {
+      text-align: right;
+      margin-bottom: 1rem;
+    }
+    .forgot-password a {
+      color: #ffd;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -42,110 +110,183 @@
     <!-- Login Form -->
     <form id="loginForm">
       <input type="email" id="loginEmail" placeholder="Email" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
+      <input
+        type="password"
+        id="loginPassword"
+        placeholder="Password"
+        required
+      />
+      <div class="forgot-password">
+        <a id="showResetPassword">Forgot Password?</a>
+      </div>
       <button type="submit">Login</button>
       <div class="form-toggle">
-        <p>Don't have an account? <a onclick="toggleForms('signup')">Create one</a></p>
+        <p>
+          Don't have an account?
+          <a onclick="toggleForms('signup')">Create one</a>
+        </p>
       </div>
     </form>
 
     <!-- Signup Form -->
     <form id="signupForm" style="display: none;">
       <input type="email" id="signupEmail" placeholder="Email" required />
-      <input type="password" id="signupPassword" placeholder="Password" required />
+      <input
+        type="password"
+        id="signupPassword"
+        placeholder="Password"
+        required
+      />
       <button type="submit">Sign Up</button>
       <div class="form-toggle">
-        <p>Already have an account? <a onclick="toggleForms('login')">Login</a></p>
+        <p>
+          Already have an account?
+          <a onclick="toggleForms('login')">Login</a>
+        </p>
       </div>
     </form>
 
-    <!-- Other Auth Options -->
+    <!-- Reset Password Form -->
+    <form id="resetPasswordForm" style="display: none;">
+      <input
+        type="email"
+        id="resetEmail"
+        placeholder="Enter your email to reset password"
+        required
+      />
+      <button type="submit">Send Reset Link</button>
+      <div class="form-toggle" style="margin-top: 1rem;">
+        <p>
+          Remembered your password?
+          <a onclick="toggleForms('login')">Login</a>
+        </p>
+      </div>
+    </form>
+
+    <!-- OAuth Options -->
     <div class="nav-options">
-      <button id="googleLoginBtn">Continue with Google</button>
-      <button onclick="window.location.href='phone-auth.html'">Login with Phone Number</button>
+      <button id="googleLogin">Continue with Google</button>
+      <button onclick="window.location.href='phone-auth.html'">
+        Login with Phone Number
+      </button>
     </div>
   </div>
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
     import {
       getAuth,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       sendEmailVerification,
+      sendPasswordResetEmail,
+      signInWithPopup,
       GoogleAuthProvider,
-      signInWithPopup
-    } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+    } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
-  authDomain: "portfolio-56be7.firebaseapp.com",
-  projectId: "portfolio-56be7",
-  storageBucket: "portfolio-56be7.firebasestorage.app",
-  messagingSenderId: "888511551571",
-  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
-  measurementId: "G-X3CYL9YZR1"
-};
+    // Your Firebase configuration here:
+    const firebaseConfig = {
+      apiKey: "YOUR_VALID_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "G-MEASUREMENT_ID",
+    };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
+    const provider = new GoogleAuthProvider();
 
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    // Elements
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+    const resetPasswordForm = document.getElementById("resetPasswordForm");
+    const showResetPasswordLink = document.getElementById("showResetPassword");
 
-    loginForm.addEventListener('submit', async (e) => {
+    // Toggle Forms function
+    function toggleForms(formType) {
+      if (formType === "signup") {
+        loginForm.style.display = "none";
+        signupForm.style.display = "block";
+        resetPasswordForm.style.display = "none";
+      } else if (formType === "reset") {
+        loginForm.style.display = "none";
+        signupForm.style.display = "none";
+        resetPasswordForm.style.display = "block";
+      } else {
+        loginForm.style.display = "block";
+        signupForm.style.display = "none";
+        resetPasswordForm.style.display = "none";
+      }
+    }
+
+    // Show reset password form on link click
+    showResetPasswordLink.addEventListener("click", () => {
+      toggleForms("reset");
+    });
+
+    // Login form submit
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
       try {
         const userCred = await signInWithEmailAndPassword(auth, email, password);
         if (!userCred.user.emailVerified) {
           alert("Please verify your email before logging in.");
-          auth.signOut();
-        } else {
-          alert("Login successful!");
-          // Redirect or show dashboard
+          await auth.signOut();
+          return;
         }
+        alert("Login successful! Welcome " + (userCred.user.displayName || ""));
       } catch (error) {
-        alert("Login failed: " + error.message);
+        alert(error.message);
       }
     });
 
-    signupForm.addEventListener('submit', async (e) => {
+    // Signup form submit
+    signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
       try {
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         await sendEmailVerification(userCred.user);
-        alert('Signup successful! Please verify your email.');
-        toggleForms('login');
+        alert("Signup successful! Please verify your email.");
+        toggleForms("login");
       } catch (error) {
-        alert("Signup failed: " + error.message);
+        alert(error.message);
       }
     });
 
-    googleLoginBtn.addEventListener('click', async () => {
+    // Reset Password form submit
+    resetPasswordForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("resetEmail").value;
       try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        alert("Welcome " + result.user.displayName);
-        // Redirect or show dashboard
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset email sent! Please check your inbox.");
+        toggleForms("login");
       } catch (error) {
-        alert("Google login failed: " + error.message);
+        alert(error.message);
       }
     });
 
-    function toggleForms(formType) {
-      if (formType === 'signup') {
-        loginForm.style.display = 'none';
-        signupForm.style.display = 'block';
-      } else {
-        loginForm.style.display = 'block';
-        signupForm.style.display = 'none';
+    // Google Login
+    document.getElementById("googleLogin").addEventListener("click", async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        alert("Google sign-in successful. Welcome " + user.displayName);
+        // Redirect or load your app page here
+      } catch (error) {
+        alert("Google sign-in failed: " + error.message);
       }
-    }
+    });
+
+    window.toggleForms = toggleForms; // Make toggleForms global so inline onclick works
   </script>
 </body>
 </html>

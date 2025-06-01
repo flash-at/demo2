@@ -6,72 +6,87 @@
   <title>CodeCafe - Phone Login</title>
   <style>
     body {
-      font-family: "Poppins", sans-serif;
-      background: linear-gradient(to right, #1e3c72, #2a5298);
-      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #fafafa;
+      color: #222;
+    }
+    h2 {
+      margin-bottom: 16px;
+    }
+    .phone-input-container {
       display: flex;
-      flex-direction: column;
+      width: 300px;
+      margin: 8px 0 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      color: #000;
+    }
+    .phone-code {
+      padding: 12px 10px;
+      background-color: #f0f0f0;
+      font-weight: 600;
+      display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
-      padding: 20px;
+      user-select: none;
+      border-right: 1px solid #ccc;
+      min-width: 55px;
     }
-
-    h2 {
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-
-    input {
-      width: 280px;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
+    #phoneNumber {
+      flex: 1;
       border: none;
       font-size: 1rem;
+      padding: 12px 10px;
+      outline: none;
+      color: #000;
     }
-
-    button {
+    #otp {
       width: 300px;
-      padding: 12px;
-      margin: 10px 0;
-      background-color: #ff6a00;
+      padding: 12px 10px;
+      font-size: 1rem;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    button {
+      background-color: #0066cc;
       border: none;
+      padding: 12px 20px;
+      margin: 5px 10px 15px 0;
       border-radius: 8px;
       color: white;
-      font-weight: 600;
-      cursor: pointer;
       font-size: 1rem;
+      cursor: pointer;
       transition: background-color 0.3s ease;
     }
     button:hover {
-      background-color: #ff8c1a;
+      background-color: #004999;
     }
-
     #recaptcha-container {
-      margin: 15px 0;
+      margin-bottom: 16px;
     }
-
-    /* Toast style */
     #toast {
       visibility: hidden;
       min-width: 250px;
-      background-color: #333;
+      margin-left: -125px;
+      background-color: #4caf50;
       color: #fff;
       text-align: center;
       border-radius: 8px;
-      padding: 16px;
+      padding: 12px 16px;
       position: fixed;
-      z-index: 1000;
+      z-index: 1;
       left: 50%;
       bottom: 30px;
-      font-size: 17px;
-      transform: translateX(-50%);
+      font-size: 1rem;
       opacity: 0;
-      transition: opacity 0.5s ease, visibility 0.5s;
+      transition: opacity 0.5s ease-in-out, visibility 0.5s;
     }
-
     #toast.show {
       visibility: visible;
       opacity: 1;
@@ -81,21 +96,26 @@
 <body>
   <h2>Login with Phone Number</h2>
 
-  <input
-    type="text"
-    id="phoneNumber"
-    placeholder="+91 12345 67890"
-    maxlength="13"
-    autocomplete="tel"
-  />
+  <div class="phone-input-container">
+    <div class="phone-code">+91</div>
+    <input
+      type="tel"
+      id="phoneNumber"
+      placeholder="7013295712"
+      maxlength="10"
+      autocomplete="tel"
+    />
+  </div>
 
   <div id="recaptcha-container"></div>
 
-  <button onclick="sendOTP()">Send OTP</button>
+  <button id="sendOtpBtn">Send OTP</button>
+  <button id="backBtn">Back</button>
+
+  <br />
 
   <input type="text" id="otp" placeholder="Enter OTP" maxlength="6" />
-
-  <button onclick="verifyOTP()">Verify OTP</button>
+  <button id="verifyOtpBtn">Verify OTP</button>
 
   <div id="toast">OTP sent successfully!</div>
 
@@ -107,15 +127,16 @@
       signInWithPhoneNumber
     } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
-  authDomain: "portfolio-56be7.firebaseapp.com",
-  projectId: "portfolio-56be7",
-  storageBucket: "portfolio-56be7.firebasestorage.app",
-  messagingSenderId: "888511551571",
-  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
-  measurementId: "G-X3CYL9YZR1"
-};
+    // Your firebaseConfig here
+    const firebaseConfig = {
+      apiKey: "YOUR_VALID_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "G-MEASUREMENT_ID"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
@@ -134,7 +155,6 @@ const firebaseConfig = {
 
     let confirmationResult;
 
-    // Show toast function
     function showToast(message) {
       const toast = document.getElementById("toast");
       toast.textContent = message;
@@ -144,40 +164,39 @@ const firebaseConfig = {
       }, 3000);
     }
 
-    // Validate Indian phone number format
     function isValidIndianPhone(phone) {
-      // Remove spaces and dashes
-      const cleaned = phone.replace(/\s|-/g, "");
-      // Must start with +91 and 10 digits after it
-      const pattern = /^\+91[6-9]\d{9}$/;
-      return pattern.test(cleaned);
+      // Phone should be 10 digits starting with 6-9
+      const pattern = /^[6-9]\d{9}$/;
+      return pattern.test(phone);
     }
 
-    window.sendOTP = () => {
-      const phoneNumberInput = document.getElementById("phoneNumber");
-      const phoneNumber = phoneNumberInput.value.trim();
+    document.getElementById("sendOtpBtn").addEventListener("click", () => {
+      const phoneInput = document.getElementById("phoneNumber");
+      const phone = phoneInput.value.trim();
 
-      if (!isValidIndianPhone(phoneNumber)) {
-        alert("Please enter a valid Indian phone number starting with +91 and 10 digits.");
-        phoneNumberInput.focus();
+      if (!isValidIndianPhone(phone)) {
+        alert("Please enter a valid 10-digit Indian mobile number starting with 6-9.");
+        phoneInput.focus();
         return;
       }
 
-      signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+      const fullPhoneNumber = "+91" + phone;
+
+      signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier)
         .then((result) => {
           confirmationResult = result;
           showToast("OTP sent successfully!");
         })
         .catch((error) => {
           alert("Error sending OTP: " + error.message);
-          // Reset reCAPTCHA on error so user can retry
-          window.recaptchaVerifier.render().then(widgetId => {
+          // Reset reCAPTCHA in case of error
+          window.recaptchaVerifier.render().then((widgetId) => {
             grecaptcha.reset(widgetId);
           });
         });
-    };
+    });
 
-    window.verifyOTP = () => {
+    document.getElementById("verifyOtpBtn").addEventListener("click", () => {
       const otpInput = document.getElementById("otp");
       const otp = otpInput.value.trim();
 
@@ -194,15 +213,18 @@ const firebaseConfig = {
 
       confirmationResult
         .confirm(otp)
-        .then((result) => {
+        .then(() => {
           alert("Phone login successful!");
-          // Redirect to your main app page after login success
-          window.location.href = "index.html";
+          window.location.href = "index.html"; // Redirect after success
         })
         .catch(() => {
           alert("Incorrect OTP. Please try again.");
         });
-    };
+    });
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.history.back();
+    });
   </script>
 </body>
 </html>

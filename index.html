@@ -3,78 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Modern Login</title>
+  <title>Secure Auth Page</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <div class="form-container" id="formBox">
-      <div class="form-toggle">
-        <button id="loginToggle" class="active">Login</button>
-        <button id="signupToggle">Sign Up</button>
+    <div class="form-box">
+      <div class="toggle-buttons">
+        <button class="toggle-btn active" id="loginTab">Login</button>
+        <button class="toggle-btn" id="signupTab">Sign Up</button>
       </div>
 
-      <!-- Login Form -->
+      <!-- LOGIN FORM -->
       <form id="loginForm" class="form active">
         <h2>Login</h2>
-        <div class="input-group">
-          <label>Email</label>
-          <input type="email" id="loginEmail" required />
-        </div>
-        <div class="input-group">
-          <label>Password</label>
-          <input type="password" id="loginPassword" required />
-        </div>
+        <input type="email" placeholder="Email" id="loginEmail" required />
+        <input type="password" placeholder="Password" id="loginPassword" required />
         <button type="submit" class="btn">Login</button>
-
-        <div class="divider"><span>or</span></div>
-
+        <div class="divider"><span>OR</span></div>
         <button type="button" id="googleLogin" class="btn google">Login with Google</button>
         <button type="button" id="phoneLogin" class="btn phone">Login with Phone</button>
+        <div id="loginPhoneFields" style="display:none;">
+          <input type="text" id="loginPhone" placeholder="Enter Phone Number" />
+          <div id="recaptcha-login"></div>
+          <button type="button" class="btn" id="sendOtpLogin">Send OTP</button>
+          <input type="text" id="otpLogin" placeholder="Enter OTP" />
+          <button type="button" class="btn" id="verifyOtpLogin">Verify OTP</button>
+        </div>
       </form>
 
-      <!-- Sign-Up Form -->
+      <!-- SIGNUP FORM -->
       <form id="signupForm" class="form">
         <h2>Create Account</h2>
-        <div class="input-group">
-          <label>Email</label>
-          <input type="email" id="signupEmail" required />
-        </div>
-        <div class="input-group">
-          <label>Password</label>
-          <input type="password" id="signupPassword" required />
-        </div>
+        <input type="email" placeholder="Email" id="signupEmail" required />
+        <input type="password" placeholder="Password" id="signupPassword" required />
         <button type="submit" class="btn">Sign Up</button>
-
-        <div class="divider"><span>or</span></div>
-
+        <div class="divider"><span>OR</span></div>
         <button type="button" id="googleSignup" class="btn google">Sign Up with Google</button>
         <button type="button" id="phoneSignup" class="btn phone">Sign Up with Phone</button>
+        <div id="signupPhoneFields" style="display:none;">
+          <input type="text" id="signupPhone" placeholder="Enter Phone Number" />
+          <div id="recaptcha-signup"></div>
+          <button type="button" class="btn" id="sendOtpSignup">Send OTP</button>
+          <input type="text" id="otpSignup" placeholder="Enter OTP" />
+          <button type="button" class="btn" id="verifyOtpSignup">Verify OTP</button>
+        </div>
       </form>
     </div>
   </div>
 
+  <div id="messageBox" class="message-box"></div>
+
   <script type="module" src="register.js"></script>
   <script>
-    // Toggle forms (optional enhancement without JS modules)
-    const loginToggle = document.getElementById("loginToggle");
-    const signupToggle = document.getElementById("signupToggle");
+    // Form toggling UI
+    const loginTab = document.getElementById("loginTab");
+    const signupTab = document.getElementById("signupTab");
     const loginForm = document.getElementById("loginForm");
     const signupForm = document.getElementById("signupForm");
 
-    loginToggle.addEventListener("click", () => {
-      loginToggle.classList.add("active");
-      signupToggle.classList.remove("active");
+    loginTab.addEventListener("click", () => {
+      loginTab.classList.add("active");
+      signupTab.classList.remove("active");
       loginForm.classList.add("active");
       signupForm.classList.remove("active");
     });
 
-    signupToggle.addEventListener("click", () => {
-      signupToggle.classList.add("active");
-      loginToggle.classList.remove("active");
+    signupTab.addEventListener("click", () => {
+      signupTab.classList.add("active");
+      loginTab.classList.remove("active");
       signupForm.classList.add("active");
       loginForm.classList.remove("active");
     });
+
+    // Phone toggle logic
+    document.getElementById("phoneLogin").onclick = () => {
+      document.getElementById("loginPhoneFields").style.display = "block";
+    };
+    document.getElementById("phoneSignup").onclick = () => {
+      document.getElementById("signupPhoneFields").style.display = "block";
+    };
   </script>
 </body>
 </html>

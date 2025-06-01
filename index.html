@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login & Signup</title>
+  <title>Firebase Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="form-wrapper">
-    <div class="form-box login">
+    <div class="form-box login active">
       <h2>Login</h2>
-      <form>
+      <form id="loginForm">
         <div class="input-box">
-          <input type="text" required />
-          <label>Username</label>
+          <input type="email" id="loginEmail" required />
+          <label>Email</label>
         </div>
         <div class="input-box">
-          <input type="password" required />
+          <input type="password" id="loginPassword" required />
           <label>Password</label>
         </div>
         <button type="submit">Login</button>
@@ -25,18 +25,14 @@
     </div>
 
     <div class="form-box signup">
-      <h2>Create Account</h2>
-      <form>
+      <h2>Sign Up</h2>
+      <form id="signupForm">
         <div class="input-box">
-          <input type="text" required />
-          <label>Full Name</label>
-        </div>
-        <div class="input-box">
-          <input type="email" required />
+          <input type="email" id="signupEmail" required />
           <label>Email</label>
         </div>
         <div class="input-box">
-          <input type="password" required />
+          <input type="password" id="signupPassword" required />
           <label>Password</label>
         </div>
         <button type="submit">Sign Up</button>
@@ -45,24 +41,7 @@
     </div>
   </div>
 
-  <script>
-    const showSignup = document.getElementById('show-signup');
-    const showLogin = document.getElementById('show-login');
-    const loginForm = document.querySelector('.form-box.login');
-    const signupForm = document.querySelector('.form-box.signup');
-
-    showSignup.addEventListener('click', () => {
-      loginForm.style.display = 'none';
-      signupForm.style.display = 'block';
-    });
-
-    showLogin.addEventListener('click', () => {
-      signupForm.style.display = 'none';
-      loginForm.style.display = 'block';
-    });
-
-    // Initial state
-    signupForm.style.display = 'none';
-  </script>
+  <!-- Firebase JS (Separate file) -->
+  <script type="module" src="register.js"></script>
 </body>
 </html>

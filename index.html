@@ -1,62 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CodeCafe - Welcome</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeCafe - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #2c3e50, #3498db);
+    }
+
+    body {
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
       color: #fff;
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.1);
+      background: #ffffff10;
       padding: 2rem;
       border-radius: 12px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-    }
-
-    h1 {
-      margin-bottom: 1.5rem;
-    }
-
-    .auth-btn {
-      display: block;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
       width: 100%;
-      padding: 0.75rem;
-      margin: 10px 0;
+      max-width: 400px;
+      transition: all 0.4s ease;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8rem;
       background: #ff6a00;
       border: none;
-      color: white;
-      font-weight: bold;
       border-radius: 6px;
+      font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s;
+      color: white;
+      transition: background 0.3s ease;
     }
 
-    .auth-btn:hover {
-      background: #ff8124;
+    button:hover {
+      background: #ff8c1a;
     }
+
+    .form-toggle {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .form-toggle a {
+      color: #ffd;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .nav-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .nav-options button {
+      background-color: #444;
+    }
+
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome to CodeCafe</h1>
-    <button class="auth-btn" onclick="location.href='email-auth.html'">Login / Sign Up with Email</button>
-    <button class="auth-btn" onclick="location.href='google-auth.html'">Continue with Google</button>
-    <button class="auth-btn" onclick="location.href='phone-auth.html'">Continue with Phone Number</button>
+  <div class="container" id="auth-container">
+    <h2>Welcome to CodeCafe</h2>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <div class="form-toggle">
+        <p>Don't have an account? <a onclick="toggleForms('signup')">Create one</a></p>
+      </div>
+    </form>
+
+    <form id="signupForm" style="display: none;">
+      <input type="email" id="signupEmail" placeholder="Email" required>
+      <input type="password" id="signupPassword" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+      <div class="form-toggle">
+        <p>Already have an account? <a onclick="toggleForms('login')">Login</a></p>
+      </div>
+    </form>
+
+    <div class="nav-options">
+      <button onclick="window.location.href='google-auth.html'">Continue with Google</button>
+      <button onclick="window.location.href='phone-auth.html'">Login with Phone Number</button>
+    </div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification,
+      onAuthStateChanged
+    } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
+  authDomain: "portfolio-56be7.firebaseapp.com",
+  projectId: "portfolio-56be7",
+  storageBucket: "portfolio-56be7.firebasestorage.app",
+  messagingSenderId: "888511551571",
+  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
+  measurementId: "G-X3CYL9YZR1"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        if (!userCred.user.emailVerified) {
+          alert("Please verify your email before logging in.");
+          auth.signOut();
+          return;
+        }
+        alert('Login successful!');
+        // Proceed to main app
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(userCred.user);
+        alert('Signup successful! Please verify your email.');
+        toggleForms('login');
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    function toggleForms(formType) {
+      if (formType === 'signup') {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+      } else {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+      }
+    }
+  </script>
 </body>
 </html>

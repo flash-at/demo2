@@ -46,11 +46,14 @@
 </head>
 <body>
   <h2>Login with Phone Number</h2>
+
   <div>
     <span style="font-weight: bold;">+91</span>
     <input type="text" id="phoneNumber" placeholder="7013295712" maxlength="10" />
   </div>
+
   <div id="recaptcha-container"></div>
+
   <button id="sendOtp">Send OTP</button>
 
   <input type="text" id="otpCode" placeholder="Enter OTP" />
@@ -66,36 +69,36 @@
       signInWithPhoneNumber
     } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
-  authDomain: "portfolio-56be7.firebaseapp.com",
-  projectId: "portfolio-56be7",
-  storageBucket: "portfolio-56be7.firebasestorage.app",
-  messagingSenderId: "888511551571",
-  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
-  measurementId: "G-X3CYL9YZR1"
-};
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
+      authDomain: "portfolio-56be7.firebaseapp.com",
+      projectId: "portfolio-56be7",
+      storageBucket: "portfolio-56be7.firebasestorage.app",
+      messagingSenderId: "888511551571",
+      appId: "1:888511551571:web:11e809e995377e9a4ccea6",
+      measurementId: "G-X3CYL9YZR1"
+    };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    window.onload = () => {
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-          'size': 'normal',
-          'callback': () => console.log('reCAPTCHA solved'),
-          'expired-callback': () => console.warn('reCAPTCHA expired')
-        }, auth);
-
-        window.recaptchaVerifier.render().then((widgetId) => {
-          window.recaptchaWidgetId = widgetId;
-        });
-      }
-    };
-
     let confirmationResult;
 
-    document.getElementById('sendOTPBtn').addEventListener('click', async () => {
+    // Initialize reCAPTCHA
+    window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+      'size': 'normal',
+      'callback': () => {
+        console.log('reCAPTCHA solved');
+      },
+      'expired-callback': () => {
+        console.warn('reCAPTCHA expired, solve again.');
+      }
+    }, auth);
+
+    // Send OTP
+    document.getElementById('sendOtp').addEventListener('click', async () => {
       const number = document.getElementById('phoneNumber').value.trim();
       if (number.length !== 10 || isNaN(number)) {
         alert("Please enter a valid 10-digit Indian mobile number.");
@@ -112,8 +115,9 @@ const firebaseConfig = {
       }
     });
 
-    document.getElementById('verifyOTPBtn').addEventListener('click', async () => {
-      const otp = document.getElementById('otp').value.trim();
+    // Verify OTP
+    document.getElementById('verifyOtp').addEventListener('click', async () => {
+      const code = document.getElementById('otpCode').value.trim();
 
       if (!confirmationResult) {
         alert("Please request an OTP first.");
@@ -121,11 +125,12 @@ const firebaseConfig = {
       }
 
       try {
-        await confirmationResult.confirm(otp);
+        await confirmationResult.confirm(code);
         alert("Phone login successful!");
-        window.location.href = "index.html";
+        window.location.href = "index.html"; // Change this to your desired redirect
       } catch (error) {
         alert("Incorrect OTP: " + error.message);
+        console.error(error);
       }
     });
   </script>

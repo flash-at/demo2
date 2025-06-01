@@ -11,12 +11,13 @@ import { getAuth,
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCQ-iT-JSlsbO2IVNO_7ddZK-rAVebHJ4g",
-  authDomain: "loginapp-17f33.firebaseapp.com",
-  projectId: "loginapp-17f33",
-  storageBucket: "loginapp-17f33.appspot.com",
-  messagingSenderId: "496898535747",
-  appId: "1:496898535747:web:6b15b189e81d9f570f8399"
+  apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
+  authDomain: "portfolio-56be7.firebaseapp.com",
+  projectId: "portfolio-56be7",
+  storageBucket: "portfolio-56be7.firebasestorage.app",
+  messagingSenderId: "888511551571",
+  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
+  measurementId: "G-X3CYL9YZR1"
 };
 
 // Initialize Firebase

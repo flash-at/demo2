@@ -3,130 +3,227 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CodeCafe - Login & Signup</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <title>Firebase Auth UI</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+      padding: 0;
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(120deg, #232526, #414345);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
     .container {
       background: #fff;
-      border-radius: 10px;
       padding: 2rem;
-      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 90%;
       max-width: 400px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-      animation: slideIn 0.5s ease;
+      animation: slideIn 0.5s ease-out;
     }
+
     h2 {
       text-align: center;
       margin-bottom: 1rem;
       color: #333;
     }
+
     input {
       width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border-radius: 5px;
+      padding: 10px;
+      margin: 0.5rem 0;
       border: 1px solid #ccc;
-      font-size: 1rem;
+      border-radius: 5px;
     }
+
     button {
       width: 100%;
-      padding: 0.75rem;
-      background-color: #ff5e57;
-      color: white;
+      padding: 10px;
+      margin-top: 1rem;
+      background-color: #667eea;
       border: none;
+      color: white;
+      font-weight: bold;
       border-radius: 5px;
-      font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s ease;
     }
+
     button:hover {
-      background-color: #e74c3c;
+      background-color: #5a67d8;
     }
-    .link {
+
+    .extra-options {
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .phone-auth input {
+      margin-top: 0.5rem;
+    }
+
+    p {
       text-align: center;
       margin-top: 1rem;
     }
-    .link a {
-      color: #ff5e57;
+
+    a {
+      color: #667eea;
       text-decoration: none;
-      font-weight: bold;
     }
-    .nav-links {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 2rem;
-    }
-    .nav-links button {
-      width: 48%;
-      background-color: #3498db;
-    }
-    .nav-links button:hover {
-      background-color: #2980b9;
-    }
-    @keyframes slideIn {
+
+    @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(-20px);
       }
       to {
         opacity: 1;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
         transform: translateY(0);
+        opacity: 1;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container" id="main-container">
-    <form id="loginForm">
-      <h2>Login to CodeCafe</h2>
-      <input type="email" id="loginEmail" placeholder="Email" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
-      <button type="submit">Login</button>
-      <div class="link">
+  <div class="container">
+    <div id="auth-container">
+      <!-- Login Form -->
+      <form id="loginForm">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button type="submit">Login</button>
         <p>Don't have an account? <a href="#" onclick="toggleForms('signup')">Create one</a></p>
-      </div>
-    </form>
+      </form>
 
-    <form id="signupForm" style="display: none;">
-      <h2>Create a CodeCafe Account</h2>
-      <input type="email" id="signupEmail" placeholder="Email" required />
-      <input type="password" id="signupPassword" placeholder="Password" required />
-      <button type="submit">Sign Up</button>
-      <div class="link">
+      <!-- Signup Form -->
+      <form id="signupForm" style="display: none;">
+        <h2>Create Account</h2>
+        <input type="email" id="signupEmail" placeholder="Email" required />
+        <input type="password" id="signupPassword" placeholder="Password" required />
+        <button type="submit">Create Account</button>
         <p>Already have an account? <a href="#" onclick="toggleForms('login')">Login</a></p>
-      </div>
-    </form>
+      </form>
 
-    <div class="nav-links">
-      <button onclick="location.href='google-auth.html'">Login with Google</button>
-      <button onclick="location.href='phone-auth.html'">Login with Phone</button>
+      <!-- Google and Phone Options -->
+      <div class="extra-options">
+        <button id="googleSignIn">Login with Google</button>
+        <div class="phone-auth">
+          <input type="tel" id="phoneNumber" placeholder="Phone Number" />
+          <div id="recaptcha-container"></div>
+          <button id="sendOtp">Send OTP</button>
+          <input type="text" id="otpCode" placeholder="Enter OTP" />
+          <button id="verifyOtp">Verify OTP</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Firebase Config -->
-  <script type="module" src="register.js"></script>
-  <script>
-    function toggleForms(type) {
-      const loginForm = document.getElementById('loginForm');
-      const signupForm = document.getElementById('signupForm');
-      if (type === 'signup') {
-        loginForm.style.display = 'none';
-        signupForm.style.display = 'block';
+  <!-- Firebase SDK & App -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, RecaptchaVerifier, signInWithPhoneNumber, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
+      authDomain: "portfolio-56be7.firebaseapp.com",
+      projectId: "portfolio-56be7",
+      storageBucket: "portfolio-56be7.appspot.com",
+      messagingSenderId: "888511551571",
+      appId: "1:888511551571:web:11e809e995377e9a4ccea6",
+      measurementId: "G-X3CYL9YZR1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Toggle Forms
+    window.toggleForms = function(formType) {
+      const login = document.getElementById("loginForm");
+      const signup = document.getElementById("signupForm");
+      if (formType === "signup") {
+        login.style.display = "none";
+        signup.style.display = "block";
       } else {
-        loginForm.style.display = 'block';
-        signupForm.style.display = 'none';
+        login.style.display = "block";
+        signup.style.display = "none";
       }
-    }
+    };
+
+    // Login
+    document.getElementById("loginForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(user => alert("Welcome back! You're logged in."))
+        .catch(err => alert(err.message));
+    });
+
+    // Signup
+    document.getElementById("signupForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(userCredential => {
+          sendEmailVerification(userCredential.user);
+          alert("Account created. Please verify your email.");
+          toggleForms("login");
+        })
+        .catch(err => alert(err.message));
+    });
+
+    // Google Login
+    document.getElementById("googleSignIn").addEventListener("click", () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider)
+        .then(result => alert("Google sign-in successful."))
+        .catch(error => alert(error.message));
+    });
+
+    // Phone OTP
+    window.recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", {
+      size: "invisible",
+      callback: response => {
+        // reCAPTCHA solved - will proceed with OTP
+      },
+    }, auth);
+
+    document.getElementById("sendOtp").addEventListener("click", () => {
+      const phone = document.getElementById("phoneNumber").value;
+      signInWithPhoneNumber(auth, phone, window.recaptchaVerifier)
+        .then(confirmationResult => {
+          window.confirmationResult = confirmationResult;
+          alert("OTP sent.");
+        })
+        .catch(err => alert(err.message));
+    });
+
+    document.getElementById("verifyOtp").addEventListener("click", () => {
+      const code = document.getElementById("otpCode").value;
+      window.confirmationResult.confirm(code)
+        .then(result => alert("Phone authentication successful."))
+        .catch(error => alert("Invalid OTP."));
+    });
   </script>
 </body>
 </html>

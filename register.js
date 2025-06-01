@@ -68,43 +68,38 @@ window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
 
 // ------------------ Send OTP ------------------
 document.getElementById('sendOtp').addEventListener('click', async () => {
-  let phoneNumber = document.getElementById('phoneNumber').value.trim();
-  if (phoneNumber.length === 10) {
-    phoneNumber = "+91" + phoneNumber;
-  }
-
-  if (!phoneNumber.startsWith("+91") || phoneNumber.length < 13) {
-    alert("Enter valid phone number with +91 format");
+  const number = document.getElementById('phoneNumber').value.trim();
+  if (number.length !== 10 || isNaN(number)) {
+    alert("Please enter a valid 10-digit Indian mobile number.");
     return;
   }
+  const phoneNumber = '+91' + number;
 
   try {
-    if (!window.recaptchaWidgetId) {
-      window.recaptchaWidgetId = await window.recaptchaVerifier.render();
-    }
-
-    const appVerifier = window.recaptchaVerifier;
-    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-    window.confirmationResult = confirmationResult;
-    alert("OTP sent!");
+    confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+    alert("OTP sent successfully to " + phoneNumber);
   } catch (error) {
     alert("Error sending OTP: " + error.message);
     console.error(error);
   }
 });
 
-// ------------------ Verify OTP ------------------
-document.getElementById('verifyOtp').addEventListener('click', () => {
-  const code = document.getElementById('otpCode').value;
+document.getElementById('verifyOtp').addEventListener('click', async () => {
+  const otp = document.getElementById('otpCode').value.trim();
 
-  if (!window.confirmationResult) {
-    alert("Please send OTP first.");
+  if (!confirmationResult) {
+    alert("Please request an OTP first.");
     return;
   }
 
-  window.confirmationResult.confirm(code)
-    .then(() => alert("Phone verified!"))
-    .catch((error) => {
-      alert("OTP Verification Failed: " + error.message);
-    });
+  try {
+    await confirmationResult.confirm(otp);
+    alert("Phone login successful!");
+    window.location.href = "index.html";
+  } catch (error) {
+    alert("Incorrect OTP: " + error.message);
+  }
 });
+
+
+// ------------------ Verify OTP ------------------

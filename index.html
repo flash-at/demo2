@@ -93,13 +93,13 @@
                 <div>
                     <label for="loginEmail" class="block text-sm font-medium text-slate-300">Email address</label>
                     <input type="email" id="loginEmail" name="loginEmail" placeholder="you@example.com" required
-                           class="mt-1 block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                            class="mt-1 block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
                 </div>
                 <div>
                     <label for="loginPassword" class="block text-sm font-medium text-slate-300">Password</label>
                     <div class="relative mt-1">
                         <input type="password" id="loginPassword" name="loginPassword" placeholder="••••••••" required
-                               class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                                class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
                         <span class="password-toggle" onclick="togglePasswordVisibility('loginPassword', this)">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                         </span>
@@ -118,15 +118,20 @@
                 <div>
                     <label for="signupEmail" class="block text-sm font-medium text-slate-300">Email address</label>
                     <input type="email" id="signupEmail" name="signupEmail" placeholder="you@example.com" required
+                            class="mt-1 block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                <div>
+                    <label for="signupUsername" class="block text-sm font-medium text-slate-300">Username</label>
+                    <input type="text" id="signupUsername" name="signupUsername" placeholder="Choose a username" required
                            class="mt-1 block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
                 </div>
                 <div>
                     <label for="signupPassword" class="block text-sm font-medium text-slate-300">Password</label>
-                     <div class="relative mt-1">
+                        <div class="relative mt-1">
                         <input type="password" id="signupPassword" name="signupPassword" placeholder="Create a strong password (min. 6 chars)" required
-                               class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                                class="block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
                         <span class="password-toggle" onclick="togglePasswordVisibility('signupPassword', this)">
-                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                         </span>
                     </div>
                 </div>
@@ -140,7 +145,7 @@
                 <div>
                     <label for="resetEmail" class="block text-sm font-medium text-slate-300">Email address</label>
                     <input type="email" id="resetEmail" name="resetEmail" placeholder="Enter your registered email" required
-                           class="mt-1 block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                            class="mt-1 block w-full px-3 py-2.5 bg-slate-700 border border-slate-600 rounded-md text-sm shadow-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
                 </div>
                 <button type="submit"
                         class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
@@ -191,20 +196,22 @@
             sendPasswordResetEmail,
             signInWithPopup,
             GoogleAuthProvider,
-            signOut
+            signOut,
+            updateProfile // Import updateProfile
         } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
         // --- Firebase Configuration ---
         // IMPORTANT: Replace with your actual Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM", // Replace
-            authDomain: "portfolio-56be7.firebaseapp.com", // Replace
-            projectId: "portfolio-56be7", // Replace
-            storageBucket: "portfolio-56be7.appspot.com", // Replace
-            messagingSenderId: "888511551571", // Replace
-            appId: "1:888511551571:web:11e809e995377e9a4ccea6" // Replace
-            // measurementId: "G-XXXXXXXXXX" // Optional
-        };
+  apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
+  authDomain: "portfolio-56be7.firebaseapp.com",
+  projectId: "portfolio-56be7",
+  storageBucket: "portfolio-56be7.firebasestorage.app",
+  messagingSenderId: "888511551571",
+  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
+  measurementId: "G-X3CYL9YZR1"
+};
+    
 
         // --- Initialize Firebase ---
         let app;
@@ -270,7 +277,7 @@
             }
         }
         function setButtonLoading(buttonElement, isLoading, baseButtonText) {
-             if (buttonElement) {
+            if (buttonElement) {
                 buttonElement.disabled = isLoading;
                 const svgIcon = buttonElement.querySelector('svg');
                 if (isLoading) {
@@ -309,7 +316,7 @@
         function redirectToDashboard() {
             showToast("Redirecting to dashboard...", "info", 2000);
             setTimeout(() => {
-                window.location.href = "https://mahesh06.me/chatbot/";
+                window.location.href = "https://mahesh06.me/chatbot/"; // Example redirect URL
             }, 1500);
         }
 
@@ -343,8 +350,13 @@
             signupFormEl?.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const email = signupFormEl.signupEmail.value;
+                const username = signupFormEl.signupUsername.value; // Get username
                 const password = signupFormEl.signupPassword.value;
 
+                if (!username.trim()) {
+                    showToast("Username is required.", "error");
+                    return;
+                }
                 if (password.length < 6) {
                     showToast("Password should be at least 6 characters long.", "error");
                     return;
@@ -352,8 +364,16 @@
                 setFormLoading(signupFormEl, true, "Create Account");
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    
+                    // After user is created, update their profile with the displayName
+                    await updateProfile(userCredential.user, {
+                        displayName: username
+                    });
+                    
                     await sendEmailVerification(userCredential.user);
                     showToast("Signup successful! Please check your email to verify your account.", "success", 6000);
+                    // Optionally clear form or switch tab
+                    signupFormEl.reset(); // Clear the form
                     switchTab('loginForm'); 
                 } catch (error) {
                     console.error("Signup error:", error);

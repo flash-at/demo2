@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeCafe - Authentication</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Improved Autofill Styles for Webkit browsers */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #334155 inset !important; /* Tailwind slate-700 (slightly darker than input bg) */
+            -webkit-text-fill-color: #f8fafc !important; /* Tailwind slate-50 (light text) */
+            caret-color: #f8fafc !important; /* Ensure cursor is visible */
+        }
+        .tab-button.active {
+            border-color: #fb923c; /* Tailwind orange-400 */
+            color: #fb923c; /* Tailwind orange-400 */
+        }
+        /* Toast Notification Styles */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast.success {
+            background-color: #22c55e; /* Tailwind green-500 */
+        }
+        .toast.error {
+            background-color: #ef4444; /* Tailwind red-500 */
+        }
+        .toast.info {
+            background-color: #3b82f6; /* Tailwind blue-500 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen flex flex-col items-center justify-center p-4 text-white">
+
+    <div id="toast-container"></div>
+
+    <div class="w-full max-w-md">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-orange-400">CodeCafe</h1>
+            <p class="text-slate-400">Your coding journey starts here.</p>
+        </header>
+
+        <main id="auth-container" class="bg-slate-700 p-6 sm:p-8 rounded-xl shadow-2xl">
+            <div class="mb-6 border-b border-slate-600">
+                <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                    <button id="tab-login" data-form="loginForm" class="tab-button active whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-slate-300 hover:text-orange-400 hover:border-orange-400 transition-colors">
+                        Login
+                    </button>
+                    <button id="tab-signup" data-form="signupForm" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-slate-300 hover:text-orange-400 hover:border-orange-400 transition-colors">
+                        Sign Up
+                    </button>
+                     <button id="tab-reset" data-form="resetPasswordForm" class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-slate-300 hover:text-orange-400 hover:border-orange-400 transition-colors">
+                        Reset Password
+                    </button>
+                </nav>
+            </div>
+
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="loginEmail" class="block text-sm font-medium text-slate-300">Email address</label>
+                    <input type="email" id="loginEmail" name="loginEmail" placeholder="you@example.com" required
+                           class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-medium text-slate-300">Password</label>
+                    <input type="password" id="loginPassword" name="loginPassword" placeholder="••••••••" required
+                           class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                <div class="text-right text-sm">
+                    <a href="#" id="showResetPasswordFromLogin" class="font-medium text-orange-400 hover:text-orange-300">Forgot password?</a>
+                </div>
+                <button type="submit" id="loginButton"
+                        class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors disabled:opacity-50">
+                    Login
+                </button>
+            </form>
+
+            <form id="signupForm" class="space-y-6 hidden">
+                <div>
+                    <label for="signupEmail" class="block text-sm font-medium text-slate-300">Email address</label>
+                    <input type="email" id="signupEmail" name="signupEmail" placeholder="you@example.com" required
+                           class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                <div>
+                    <label for="signupPassword" class="block text-sm font-medium text-slate-300">Password</label>
+                    <input type="password" id="signupPassword" name="signupPassword" placeholder="Create a strong password" required
+                           class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                 <div>
+                    <label for="signupConfirmPassword" class="block text-sm font-medium text-slate-300">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="signupConfirmPassword" placeholder="Confirm your password" required
+                           class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                <button type="submit" id="signupButton"
+                        class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors disabled:opacity-50">
+                    Create Account
+                </button>
+            </form>
+
+            <form id="resetPasswordForm" class="space-y-6 hidden">
+                <div>
+                    <label for="resetEmail" class="block text-sm font-medium text-slate-300">Email address</label>
+                    <input type="email" id="resetEmail" name="resetEmail" placeholder="Enter your registered email" required
+                           class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+                <button type="submit" id="resetPasswordButton"
+                        class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors disabled:opacity-50">
+                    Send Password Reset Link
+                </button>
+            </form>
+
+            <div class="my-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div class="w-full border-t border-slate-500"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-slate-700 text-slate-400">Or continue with</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button id="googleLoginButton"
+                        class="w-full flex items-center justify-center py-2.5 px-4 border border-slate-500 rounded-md shadow-sm bg-slate-600 text-sm font-medium text-white hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors disabled:opacity-50">
+                    <svg class="w-5 h-5 mr-2" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.477 0 10s4.477 10 10 10 10-4.477 10-10S15.523 0 10 0zM8.28 16.338A5.952 5.952 0 015.706 10c0-1.939.917-3.663 2.323-4.795.152-.123.3-.258.44-.396A5.92 5.92 0 0110 4.048c.454 0 .89.057 1.304.162l-.992 1.717A3.98 3.98 0 0010 5.952c-1.939 0-3.552 1.365-3.92 3.162h2.688V10.5H6.08c.048.48.144.94.288 1.366a3.94 3.94 0 001.912 2.472zm3.44-6.546L10 8.075V6.15c.939 0 2.344.465 2.344 2.344 0 .585-.152 1.113-.423 1.569l1.458.843A5.907 5.907 0 0015.952 10a5.925 5.925 0 00-1.18-3.662l-.047-.063a5.955 5.955 0 00-3.005-2.475v-.002H11.72c-.047 0-.093 0-.14 0H10c-.396 0-.78.047-1.152.14l.78.78c.12-.03.24-.06.36-.06.54 0 1.05.15 1.48.42l1.29-1.29A5.916 5.916 0 0010 4.048a5.916 5.916 0 00-4.294 1.728l-.63.63A5.92 5.92 0 004.048 10c0 .454.057.89.162 1.304l1.717-.992A3.98 3.98 0 015.952 10c0-1.939 1.365-3.552 3.162-3.92V8.72c.48-.048.94-.144 1.366-.288a3.94 3.94 0 012.472 1.912z" clip-rule="evenodd"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+                <button id="phoneLoginButton"
+                        class="w-full flex items-center justify-center py-2.5 px-4 border border-slate-500 rounded-md shadow-sm bg-slate-600 text-sm font-medium text-white hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors">
+                     <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                    </svg>
+                    Sign in with Phone
+                </button>
+            </div>
+        </main>
+        <footer class="text-center mt-8 text-sm text-slate-500">
+            <p>&copy; <span id="currentYear"></span> CodeCafe. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            sendEmailVerification,
+            sendPasswordResetEmail,
+            signInWithPopup,
+            GoogleAuthProvider,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Toast Notification System ---
+        const toastContainer = document.getElementById('toast-container');
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+
+            // Trigger fade in
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10); // Small delay to ensure transition is applied
+
+            // Remove toast after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                         toast.parentNode.removeChild(toast);
+                    }
+                }, 300); // Wait for fade out transition
+            }, duration);
+        }
+        
+        // --- Firebase Initialization ---
+        let auth;
+        try {
+            const firebaseConfigJSON = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+            const firebaseConfig = JSON.parse(firebaseConfigJSON);
+
+            if (!firebaseConfig.apiKey) {
+                throw new Error("Firebase configuration is missing or invalid.");
+            }
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            console.log("Firebase initialized successfully.");
+            showToast("Firebase connected", "success", 1500);
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            showToast(`Error: ${error.message}`, "error", 5000);
+            // Disable all auth buttons if Firebase fails to init
+            document.querySelectorAll('button[type="submit"], #googleLoginButton, #phoneLoginButton').forEach(btn => btn.disabled = true);
+        }
+
+        // --- DOM Elements ---
+        const loginForm = document.getElementById("loginForm");
+        const signupForm = document.getElementById("signupForm");
+        const resetPasswordForm = document.getElementById("resetPasswordForm");
+        
+        const loginButton = document.getElementById("loginButton");
+        const signupButton = document.getElementById("signupButton");
+        const resetPasswordButton = document.getElementById("resetPasswordButton");
+        const googleLoginButton = document.getElementById("googleLoginButton");
+        const phoneLoginButton = document.getElementById("phoneLoginButton");
+
+        const tabButtons = document.querySelectorAll(".tab-button");
+        const forms = [loginForm, signupForm, resetPasswordForm];
+
+        // --- Tab Switching Logic ---
+        function switchTab(targetFormId) {
+            forms.forEach(form => {
+                form.classList.toggle('hidden', form.id !== targetFormId);
+            });
+            tabButtons.forEach(button => {
+                button.classList.toggle('active', button.dataset.form === targetFormId);
+            });
+        }
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => switchTab(button.dataset.form));
+        });
+        
+        document.getElementById('showResetPasswordFromLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab('resetPasswordForm');
+        });
+
+        // --- Helper to disable/enable form buttons ---
+        function setFormLoading(formElement, isLoading) {
+            const button = formElement.querySelector('button[type="submit"]');
+            if (button) {
+                button.disabled = isLoading;
+                button.textContent = isLoading ? 'Processing...' : (formElement.id === 'loginForm' ? 'Login' : (formElement.id === 'signupForm' ? 'Create Account' : 'Send Password Reset Link'));
+            }
+        }
+
+        // --- Authentication Event Handlers ---
+        if (auth) { // Only add listeners if auth is initialized
+            // Login
+            loginForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                setFormLoading(loginForm, true);
+                const email = document.getElementById("loginEmail").value;
+                const password = document.getElementById("loginPassword").value;
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    if (!userCredential.user.emailVerified) {
+                        showToast("Please verify your email before logging in.", "info");
+                        await auth.signOut(); // Sign out user if email not verified
+                    } else {
+                        showToast(`Login successful! Welcome back.`, "success");
+                        // Redirect to dashboard or main app page
+                        setTimeout(() => window.location.href = "https://mahesh06.me/chatbot/", 1500);
+                    }
+                } catch (error) {
+                    console.error("Login error:", error);
+                    showToast(`Login failed: ${error.message}`, "error");
+                } finally {
+                    setFormLoading(loginForm, false);
+                }
+            });
+
+            // Signup
+            signupForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const email = document.getElementById("signupEmail").value;
+                const password = document.getElementById("signupPassword").value;
+                const confirmPassword = document.getElementById("signupConfirmPassword").value;
+
+                if (password !== confirmPassword) {
+                    showToast("Passwords do not match.", "error");
+                    return;
+                }
+                if (password.length < 6) {
+                    showToast("Password should be at least 6 characters.", "error");
+                    return;
+                }
+
+                setFormLoading(signupForm, true);
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await sendEmailVerification(userCredential.user);
+                    showToast("Signup successful! Please check your email to verify your account.", "success");
+                    switchTab('loginForm'); // Switch to login form after signup
+                } catch (error) {
+                    console.error("Signup error:", error);
+                    showToast(`Signup failed: ${error.message}`, "error");
+                } finally {
+                    setFormLoading(signupForm, false);
+                }
+            });
+
+            // Reset Password
+            resetPasswordForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                setFormLoading(resetPasswordForm, true);
+                const email = document.getElementById("resetEmail").value;
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    showToast("Password reset email sent! Please check your inbox.", "success");
+                    switchTab('loginForm'); // Switch to login form
+                } catch (error) {
+                    console.error("Password reset error:", error);
+                    showToast(`Password reset failed: ${error.message}`, "error");
+                } finally {
+                    setFormLoading(resetPasswordForm, false);
+                }
+            });
+
+            // Google Login
+            googleLoginButton.addEventListener("click", async () => {
+                googleLoginButton.disabled = true;
+                const provider = new GoogleAuthProvider();
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    showToast(`Signed in with Google as ${result.user.displayName}!`, "success");
+                    // Redirect
+                    setTimeout(() => window.location.href = "https://mahesh06.me/chatbot/", 1500);
+                } catch (error) {
+                    console.error("Google sign-in error:", error);
+                    showToast(`Google sign-in failed: ${error.message}`, "error");
+                } finally {
+                    googleLoginButton.disabled = false;
+                }
+            });
+
+            // Phone Login Button
+            phoneLoginButton.addEventListener("click", () => {
+                window.location.href = "phone-auth.html"; // Navigate to the phone auth page
+            });
+
+            // Auth State Observer
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log("User is signed in:", user.uid, "Email Verified:", user.emailVerified);
+                    // If user is signed in and email is verified, you might want to redirect them
+                    // from the login page if they land here accidentally.
+                    // Example: if (user.emailVerified && (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/'))) {
+                    //    window.location.href = "https://mahesh06.me/chatbot/";
+                    // }
+                } else {
+                    console.log("User is signed out.");
+                }
+            });
+        }
+
+        // Set current year in footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeCafe - Phone Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Improved Autofill Styles for Webkit browsers */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #334155 inset !important; /* Tailwind slate-700 (slightly darker than input bg) */
+            -webkit-text-fill-color: #f8fafc !important; /* Tailwind slate-50 (light text) */
+            caret-color: #f8fafc !important; /* Ensure cursor is visible */
+        }
+        #recaptcha-container > div { /* Center reCAPTCHA */
+            margin: 0 auto;
+        }
+        /* Toast Notification Styles (same as index.html) */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast.success {
+            background-color: #22c55e; /* Tailwind green-500 */
+        }
+        .toast.error {
+            background-color: #ef4444; /* Tailwind red-500 */
+        }
+        .toast.info {
+            background-color: #3b82f6; /* Tailwind blue-500 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen flex flex-col items-center justify-center p-4 text-white">
+
+    <div id="toast-container"></div>
+
+    <div class="w-full max-w-sm">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-orange-400">Login with Phone</h1>
+        </header>
+
+        <main class="bg-slate-700 p-6 sm:p-8 rounded-xl shadow-2xl space-y-6">
+            <div>
+                <label for="phoneNumber" class="block text-sm font-medium text-slate-300">Phone Number (10 digits)</label>
+                <div class="mt-1 flex rounded-md shadow-sm">
+                    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-500 bg-slate-600 text-slate-300 text-sm">
+                        +91
+                    </span>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="9876543210" required maxlength="10"
+                           class="flex-1 block w-full min-w-0 px-3 py-2 bg-slate-600 border border-slate-500 rounded-none rounded-r-md text-sm placeholder-slate-400 text-white
+                                  focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                </div>
+            </div>
+
+            <div id="recaptcha-container" class="my-4 min-h-[78px] flex justify-center"></div>
+
+            <button id="sendOtpButton" disabled
+                    class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors disabled:opacity-50">
+                Send OTP
+            </button>
+
+            <div>
+                <label for="otpCode" class="block text-sm font-medium text-slate-300">OTP Code</label>
+                <input type="text" id="otpCode" name="otpCode" placeholder="Enter 6-digit OTP" required maxlength="6"
+                       class="mt-1 block w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-md text-sm shadow-sm placeholder-slate-400 text-white
+                              focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500" disabled>
+            </div>
+
+            <button id="verifyOtpButton" disabled
+                    class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-green-500 transition-colors disabled:opacity-50">
+                Verify OTP
+            </button>
+            
+            <button id="backButton"
+                    class="w-full flex justify-center py-2.5 px-4 border border-slate-500 rounded-md shadow-sm text-sm font-medium text-white bg-slate-600 hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-700 focus:ring-orange-500 transition-colors">
+                Back to Login Options
+            </button>
+        </main>
+         <footer class="text-center mt-8 text-sm text-slate-500">
+            <p>&copy; <span id="currentYear"></span> CodeCafe. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            RecaptchaVerifier,
+            signInWithPhoneNumber
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Toast Notification System (same as index.html) ---
+        const toastContainer = document.getElementById('toast-container');
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                     if (toast.parentNode) {
+                         toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // --- Firebase Initialization ---
+        let auth;
+        let recaptchaVerifier = null;
+        let confirmationResult = null;
+        let recaptchaWidgetId = null;
+
+        try {
+            const firebaseConfigJSON = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+            const firebaseConfig = JSON.parse(firebaseConfigJSON);
+
+            if (!firebaseConfig.apiKey) {
+                throw new Error("Firebase configuration is missing or invalid.");
+            }
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            console.log("Firebase initialized for phone auth.");
+            showToast("Firebase connected", "success", 1500);
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+            showToast(`Error: ${error.message}`, "error", 5000);
+            document.getElementById('sendOtpButton').disabled = true;
+            document.getElementById('verifyOtpButton').disabled = true;
+        }
+        
+        // --- DOM Elements ---
+        const phoneNumberInput = document.getElementById("phoneNumber");
+        const otpCodeInput = document.getElementById("otpCode");
+        const sendOtpButton = document.getElementById("sendOtpButton");
+        const verifyOtpButton = document.getElementById("verifyOtpButton");
+        const backButton = document.getElementById("backButton");
+
+        // --- Initialize reCAPTCHA ---
+        function initializeRecaptcha() {
+            if (!auth) return; // Don't initialize if Firebase auth failed
+            try {
+                // Ensure reCAPTCHA container is empty if re-initializing
+                const recaptchaContainer = document.getElementById('recaptcha-container');
+                while (recaptchaContainer.firstChild) {
+                    recaptchaContainer.removeChild(recaptchaContainer.firstChild);
+                }
+
+                recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'normal', // 'invisible' can also be used
+                    'callback': (response) => {
+                        // reCAPTCHA solved, allow user to send OTP
+                        console.log("reCAPTCHA solved");
+                        sendOtpButton.disabled = false;
+                        showToast("reCAPTCHA verified. You can now send OTP.", "info");
+                    },
+                    'expired-callback': () => {
+                        // Response expired. Ask user to solve reCAPTCHA again.
+                        console.log("reCAPTCHA expired");
+                        sendOtpButton.disabled = true;
+                        showToast("reCAPTCHA expired. Please verify again.", "error");
+                        // Optionally re-render or provide a button to re-render
+                        if (window.grecaptcha && recaptchaWidgetId !== null) {
+                           try { window.grecaptcha.reset(recaptchaWidgetId); } catch(e) { console.error("Error resetting reCAPTCHA", e);}
+                        } else {
+                            initializeRecaptcha(); // Attempt to re-initialize
+                        }
+                    }
+                });
+                recaptchaVerifier.render().then((widgetId) => {
+                    recaptchaWidgetId = widgetId;
+                    console.log("reCAPTCHA rendered, widget ID:", widgetId);
+                }).catch(error => {
+                    console.error("reCAPTCHA render error:", error);
+                    showToast(`reCAPTCHA render failed: ${error.message}`, "error");
+                });
+            } catch (error) {
+                console.error("reCAPTCHA initialization error:", error);
+                showToast(`reCAPTCHA setup error: ${error.message}`, "error");
+            }
+        }
+        
+        // Initialize reCAPTCHA on window load if auth is available
+        window.onload = () => {
+            if (auth) {
+                initializeRecaptcha();
+            }
+             document.getElementById('currentYear').textContent = new Date().getFullYear();
+        };
+
+
+        // --- Event Handlers ---
+        if (auth) { // Only add listeners if auth is initialized
+            sendOtpButton.addEventListener("click", async () => {
+                const phone = phoneNumberInput.value.trim();
+                if (!/^[6-9]\d{9}$/.test(phone)) { // Basic validation for 10-digit Indian numbers
+                    showToast("Please enter a valid 10-digit Indian mobile number.", "error");
+                    return;
+                }
+                const fullPhoneNumber = "+91" + phone;
+                sendOtpButton.textContent = "Sending OTP...";
+                sendOtpButton.disabled = true;
+
+                try {
+                    confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, recaptchaVerifier);
+                    showToast("OTP sent successfully! Check your phone.", "success");
+                    otpCodeInput.disabled = false;
+                    verifyOtpButton.disabled = false;
+                    otpCodeInput.focus();
+                } catch (error) {
+                    console.error("Error sending OTP:", error);
+                    showToast(`Error sending OTP: ${error.message}`, "error");
+                     // Reset reCAPTCHA on error
+                    if (window.grecaptcha && recaptchaWidgetId !== null) {
+                        try { window.grecaptcha.reset(recaptchaWidgetId); } catch(e) { console.error("Error resetting reCAPTCHA", e);}
+                    } else {
+                         initializeRecaptcha(); // Attempt to re-initialize if reset fails
+                    }
+                } finally {
+                    sendOtpButton.textContent = "Send OTP";
+                    // sendOtpButton.disabled = false; // Keep disabled until reCAPTCHA is solved again
+                }
+            });
+
+            verifyOtpButton.addEventListener("click", async () => {
+                const otp = otpCodeInput.value.trim();
+                if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                    showToast("Please enter the 6-digit OTP.", "error");
+                    return;
+                }
+                if (!confirmationResult) {
+                    showToast("Please request an OTP first.", "error");
+                    return;
+                }
+                verifyOtpButton.textContent = "Verifying...";
+                verifyOtpButton.disabled = true;
+
+                try {
+                    const result = await confirmationResult.confirm(otp);
+                    showToast("Phone login successful! Welcome.", "success");
+                    // Redirect to dashboard or main app page
+                    setTimeout(() => window.location.href = "https://mahesh06.me/chatbot/", 1500);
+                } catch (error) {
+                    console.error("Error verifying OTP:", error);
+                    showToast(`OTP verification failed: ${error.message}`, "error");
+                } finally {
+                    verifyOtpButton.textContent = "Verify OTP";
+                    verifyOtpButton.disabled = false;
+                }
+            });
+
+            backButton.addEventListener("click", () => {
+                window.location.href = "index.html"; // Or your main login page URL
+            });
+        }
+    </script>
+</body>
+</html>

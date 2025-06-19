@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Code, Eye, EyeOff } from 'lucide-react'
+import { Code, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -35,12 +35,39 @@ const AuthPage: React.FC = () => {
   const [watchPassword, setWatchPassword] = useState('')
 
   const navigate = useNavigate()
-  const { login, signup, resetPassword, loginWithGoogle, currentUser } = useAuth()
+  const [searchParams] = useSearchParams()
+  const { login, signup, resetPassword, loginWithGoogle, currentUser, refreshUser } = useAuth()
   const { showToast } = useToast()
 
   const loginForm = useForm<LoginForm>()
   const signupForm = useForm<SignupForm>()
   const resetForm = useForm<ResetForm>()
+
+  // Handle URL parameters for verification and reset confirmations
+  useEffect(() => {
+    const verified = searchParams.get('verified')
+    const reset = searchParams.get('reset')
+    
+    if (verified === 'true') {
+      showToast('Email verification link clicked! Please check your verification status.', 'success', 6000)
+      // Refresh user data to get latest verification status
+      if (currentUser) {
+        refreshUser()
+      }
+    }
+    
+    if (reset === 'true') {
+      showToast('Password reset link clicked! You can now reset your password.', 'info', 6000)
+      setActiveTab('reset')
+    }
+  }, [searchParams, currentUser, refreshUser, showToast])
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/dashboard')
+    }
+  }, [currentUser, navigate])
 
   const togglePasswordVisibility = (field: string) => {
     setShowPassword(prev => ({ ...prev, [field]: !prev[field] }))
@@ -65,11 +92,16 @@ const AuthPage: React.FC = () => {
       return
     }
 
+    if (data.password.length < 8) {
+      showToast('Password must be at least 8 characters long.', 'error')
+      return
+    }
+
     setIsLoading(true)
     try {
       await signup(data.email, data.password, data.displayName)
       showToast(
-        'Account created successfully! Please check your email to verify your account before signing in.',
+        'Account created successfully! Please check your email (including spam folder) to verify your account.',
         'success',
         8000
       )
@@ -88,9 +120,9 @@ const AuthPage: React.FC = () => {
     try {
       await resetPassword(data.email)
       showToast(
-        'Password reset email sent! Please check your inbox and follow the instructions.',
+        'Password reset email sent! Please check your inbox and spam folder for the reset link.',
         'success',
-        6000
+        8000
       )
       resetForm.reset()
       setActiveTab('login')
@@ -111,8 +143,8 @@ const AuthPage: React.FC = () => {
       )
       navigate('/dashboard')
     } catch (error: any) {
-      if (error.message.includes('popup')) {
-        showToast('Google sign-in was cancelled or blocked.', 'info')
+      if (error.message.includes('popup') || error.message.includes('cancelled')) {
+        showToast('Google sign-in was cancelled or blocked by your browser.', 'info')
       } else {
         showToast(error.message, 'error')
       }
@@ -176,11 +208,20 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  {...loginForm.register('email', { required: 'Email is required' })}
+                  {...loginForm.register('email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Please enter a valid email address'
+                    }
+                  })}
                   placeholder="you@example.com"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {loginForm.formState.errors.email && (
+                  <p className="mt-1 text-xs text-red-400">{loginForm.formState.errors.email.message}</p>
+                )}
               </div>
 
               <div>
@@ -190,7 +231,13 @@ const AuthPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type={showPassword.loginPassword ? 'text' : 'password'}
-                    {...loginForm.register('password', { required: 'Password is required' })}
+                    {...loginForm.register('password', { 
+                      required: 'Password is required',
+                      minLength: {
+                        value: 6,
+                        message: 'Password must be at least 6 characters'
+                      }
+                    })}
                     placeholder="••••••••"
                     disabled={isLoading}
                     className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -204,6 +251,9 @@ const AuthPage: React.FC = () => {
                     {showPassword.loginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {loginForm.formState.errors.password && (
+                  <p className="mt-1 text-xs text-red-400">{loginForm.formState.errors.password.message}</p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
@@ -234,7 +284,7 @@ const AuthPage: React.FC = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <LoadingSpinner size="sm" className="mr-2" />
-                    Processing...
+                    Signing In...
                   </div>
                 ) : (
                   'Sign In'
@@ -252,11 +302,20 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  {...signupForm.register('email', { required: 'Email is required' })}
+                  {...signupForm.register('email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Please enter a valid email address'
+                    }
+                  })}
                   placeholder="you@example.com"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {signupForm.formState.errors.email && (
+                  <p className="mt-1 text-xs text-red-400">{signupForm.formState.errors.email.message}</p>
+                )}
               </div>
 
               <div>
@@ -265,11 +324,24 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  {...signupForm.register('displayName', { required: 'Display name is required' })}
+                  {...signupForm.register('displayName', { 
+                    required: 'Display name is required',
+                    minLength: {
+                      value: 2,
+                      message: 'Display name must be at least 2 characters'
+                    },
+                    maxLength: {
+                      value: 50,
+                      message: 'Display name must be less than 50 characters'
+                    }
+                  })}
                   placeholder="Your display name"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {signupForm.formState.errors.displayName && (
+                  <p className="mt-1 text-xs text-red-400">{signupForm.formState.errors.displayName.message}</p>
+                )}
               </div>
 
               <div>
@@ -281,7 +353,11 @@ const AuthPage: React.FC = () => {
                     type={showPassword.signupPassword ? 'text' : 'password'}
                     {...signupForm.register('password', { 
                       required: 'Password is required',
-                      minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                      minLength: { value: 8, message: 'Password must be at least 8 characters' },
+                      pattern: {
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                        message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+                      }
                     })}
                     placeholder="Create a strong password (min. 8 chars)"
                     disabled={isLoading}
@@ -297,6 +373,9 @@ const AuthPage: React.FC = () => {
                     {showPassword.signupPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {signupForm.formState.errors.password && (
+                  <p className="mt-1 text-xs text-red-400">{signupForm.formState.errors.password.message}</p>
+                )}
                 <PasswordStrengthIndicator password={watchPassword} />
               </div>
 
@@ -307,7 +386,13 @@ const AuthPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type={showPassword.confirmPassword ? 'text' : 'password'}
-                    {...signupForm.register('confirmPassword', { required: 'Please confirm your password' })}
+                    {...signupForm.register('confirmPassword', { 
+                      required: 'Please confirm your password',
+                      validate: (value) => {
+                        const password = signupForm.getValues('password')
+                        return value === password || 'Passwords do not match'
+                      }
+                    })}
                     placeholder="Confirm your password"
                     disabled={isLoading}
                     className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -321,26 +406,32 @@ const AuthPage: React.FC = () => {
                     {showPassword.confirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {signupForm.formState.errors.confirmPassword && (
+                  <p className="mt-1 text-xs text-red-400">{signupForm.formState.errors.confirmPassword.message}</p>
+                )}
               </div>
 
-              <div className="flex items-center">
+              <div className="flex items-start">
                 <input
                   type="checkbox"
                   {...signupForm.register('agreeTerms', { required: 'You must agree to the terms' })}
                   disabled={isLoading}
-                  className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="mt-1 rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label className="ml-2 text-sm text-slate-300">
                   I agree to the{' '}
-                  <a href="#" className="text-orange-400 hover:text-orange-300">
+                  <a href="#" className="text-orange-400 hover:text-orange-300 underline">
                     Terms of Service
                   </a>{' '}
                   and{' '}
-                  <a href="#" className="text-orange-400 hover:text-orange-300">
+                  <a href="#" className="text-orange-400 hover:text-orange-300 underline">
                     Privacy Policy
                   </a>
                 </label>
               </div>
+              {signupForm.formState.errors.agreeTerms && (
+                <p className="text-xs text-red-400">{signupForm.formState.errors.agreeTerms.message}</p>
+              )}
 
               <button
                 type="submit"
@@ -350,7 +441,7 @@ const AuthPage: React.FC = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <LoadingSpinner size="sm" className="mr-2" />
-                    Processing...
+                    Creating Account...
                   </div>
                 ) : (
                   'Create Account'
@@ -375,11 +466,20 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  {...resetForm.register('email', { required: 'Email is required' })}
+                  {...resetForm.register('email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Please enter a valid email address'
+                    }
+                  })}
                   placeholder="Enter your registered email"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {resetForm.formState.errors.email && (
+                  <p className="mt-1 text-xs text-red-400">{resetForm.formState.errors.email.message}</p>
+                )}
               </div>
 
               <button
@@ -390,7 +490,7 @@ const AuthPage: React.FC = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <LoadingSpinner size="sm" className="mr-2" />
-                    Processing...
+                    Sending Reset Link...
                   </div>
                 ) : (
                   'Send Reset Link'

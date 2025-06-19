@@ -10,7 +10,8 @@ import {
   updateProfile,
   signInWithPopup,
   GoogleAuthProvider,
-  reload
+  reload,
+  ActionCodeSettings
 } from 'firebase/auth'
 import { auth } from '../config/firebase'
 
@@ -23,6 +24,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
   resendEmailVerification: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -39,24 +41,36 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
-// Rate limiting helper
+// Enhanced rate limiting with better tracking
 class RateLimiter {
-  private attempts: Map<string, { count: number; lastAttempt: number }> = new Map()
+  private attempts: Map<string, { count: number; lastAttempt: number; blocked: boolean }> = new Map()
   private readonly maxAttempts = 3
   private readonly windowMs = 60000 // 1 minute
+  private readonly blockDuration = 300000 // 5 minutes block
 
   canAttempt(key: string): boolean {
     const now = Date.now()
     const record = this.attempts.get(key)
 
     if (!record) {
-      this.attempts.set(key, { count: 1, lastAttempt: now })
+      this.attempts.set(key, { count: 1, lastAttempt: now, blocked: false })
+      return true
+    }
+
+    // Check if still blocked
+    if (record.blocked && (now - record.lastAttempt) < this.blockDuration) {
+      return false
+    }
+
+    // Reset if block period has passed
+    if (record.blocked && (now - record.lastAttempt) >= this.blockDuration) {
+      this.attempts.set(key, { count: 1, lastAttempt: now, blocked: false })
       return true
     }
 
     // Reset if window has passed
     if (now - record.lastAttempt > this.windowMs) {
-      this.attempts.set(key, { count: 1, lastAttempt: now })
+      this.attempts.set(key, { count: 1, lastAttempt: now, blocked: false })
       return true
     }
 
@@ -67,12 +81,20 @@ class RateLimiter {
       return true
     }
 
+    // Block after max attempts
+    record.blocked = true
+    record.lastAttempt = now
     return false
   }
 
   getRemainingTime(key: string): number {
     const record = this.attempts.get(key)
     if (!record) return 0
+    
+    if (record.blocked) {
+      const elapsed = Date.now() - record.lastAttempt
+      return Math.max(0, this.blockDuration - elapsed)
+    }
     
     const elapsed = Date.now() - record.lastAttempt
     return Math.max(0, this.windowMs - elapsed)
@@ -81,12 +103,22 @@ class RateLimiter {
   reset(key: string): void {
     this.attempts.delete(key)
   }
+
+  isBlocked(key: string): boolean {
+    const record = this.attempts.get(key)
+    if (!record) return false
+    
+    const now = Date.now()
+    return record.blocked && (now - record.lastAttempt) < this.blockDuration
+  }
 }
 
 const rateLimiter = new RateLimiter()
 
-// Enhanced error handling
+// Enhanced error handling with more specific messages
 const handleAuthError = (error: any): Error => {
+  console.error('Auth error:', error)
+  
   const errorMessages: Record<string, string> = {
     'auth/user-not-found': 'No account found with this email address.',
     'auth/wrong-password': 'Incorrect password. Please try again.',
@@ -101,7 +133,7 @@ const handleAuthError = (error: any): Error => {
     'auth/popup-blocked': 'Sign-in popup was blocked by your browser. Please allow popups and try again.',
     'auth/invalid-credential': 'Invalid credentials. Please check your email and password.',
     'auth/credential-already-in-use': 'This credential is already associated with a different account.',
-    'auth/operation-not-allowed': 'This sign-in method is not enabled. Please contact support.',
+    'auth/operation-not-allowed': 'This sign-in method is not enabled.',
     'auth/requires-recent-login': 'Please sign out and sign in again to perform this action.',
     'auth/invalid-verification-code': 'Invalid verification code. Please try again.',
     'auth/invalid-verification-id': 'Invalid verification ID. Please request a new code.',
@@ -117,16 +149,20 @@ const handleAuthError = (error: any): Error => {
     'auth/argument-error': 'Invalid argument provided.',
     'auth/invalid-api-key': 'Invalid API key.',
     'auth/invalid-user-token': 'User token is invalid.',
-    'auth/network-request-failed': 'Network request failed. Please check your connection.',
     'auth/timeout': 'Request timed out. Please try again.',
-    'auth/unauthorized-domain': 'Domain is not authorized for this operation.'
+    'auth/unauthorized-domain': 'Domain is not authorized for this operation.',
+    'auth/internal-error': 'An internal error occurred. Please try again.',
+    'auth/admin-restricted-operation': 'This operation is restricted to administrators only.',
+    'auth/invalid-continue-uri': 'Invalid continue URL provided.',
+    'auth/missing-continue-uri': 'Continue URL is required.',
+    'auth/unauthorized-continue-uri': 'Continue URL is not authorized.'
   }
 
   const message = errorMessages[error.code] || error.message || 'An unexpected error occurred. Please try again.'
   return new Error(message)
 }
 
-// Retry mechanism with exponential backoff
+// Retry mechanism with better error handling
 const retryWithBackoff = async <T>(
   operation: () => Promise<T>,
   maxRetries: number = 2,
@@ -150,7 +186,10 @@ const retryWithBackoff = async <T>(
         'auth/user-disabled',
         'auth/popup-closed-by-user',
         'auth/cancelled-popup-request',
-        'auth/invalid-credential'
+        'auth/invalid-credential',
+        'auth/operation-not-allowed',
+        'auth/invalid-verification-code',
+        'auth/code-expired'
       ]
       
       if (nonRetryableErrors.includes(error.code)) {
@@ -178,6 +217,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signup = async (email: string, password: string, displayName: string) => {
     const rateLimitKey = `signup_${email}`
     
+    if (rateLimiter.isBlocked(rateLimitKey)) {
+      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 60000)
+      throw new Error(`Account creation is temporarily blocked. Please wait ${remainingTime} minutes before trying again.`)
+    }
+
     if (!rateLimiter.canAttempt(rateLimitKey)) {
       const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
       throw new Error(`Too many signup attempts. Please wait ${remainingTime} seconds before trying again.`)
@@ -185,6 +229,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       const result = await retryWithBackoff(async () => {
+        // Create user account
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         
         // Update user profile with display name
@@ -192,11 +237,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
           displayName: displayName.trim()
         })
 
-        // Send email verification with retry
-        await sendEmailVerification(userCredential.user, {
-          url: window.location.origin + '/auth',
+        // Prepare email verification settings
+        const actionCodeSettings: ActionCodeSettings = {
+          url: `${window.location.origin}/auth?verified=true`,
           handleCodeInApp: false
-        })
+        }
+
+        // Send email verification with proper error handling
+        try {
+          await sendEmailVerification(userCredential.user, actionCodeSettings)
+        } catch (verificationError: any) {
+          console.warn('Email verification failed:', verificationError)
+          // Don't throw here - account is created, just verification failed
+        }
 
         return userCredential
       })
@@ -212,6 +265,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     const rateLimitKey = `login_${email}`
     
+    if (rateLimiter.isBlocked(rateLimitKey)) {
+      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 60000)
+      throw new Error(`Login is temporarily blocked. Please wait ${remainingTime} minutes before trying again.`)
+    }
+
     if (!rateLimiter.canAttempt(rateLimitKey)) {
       const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
       throw new Error(`Too many login attempts. Please wait ${remainingTime} seconds before trying again.`)
@@ -221,14 +279,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const result = await retryWithBackoff(async () => {
         const userCredential = await signInWithEmailAndPassword(auth, email, password)
         
-        // Check email verification for email/password accounts
-        if (userCredential.user.providerData[0]?.providerId === 'password' && !userCredential.user.emailVerified) {
-          // Send verification email again
-          await sendEmailVerification(userCredential.user)
-          await signOut(auth)
-          throw new Error("Please verify your email before signing in. A new verification email has been sent.")
-        }
-
+        // Refresh user data to get latest verification status
+        await reload(userCredential.user)
+        
         return userCredential
       })
 
@@ -251,17 +304,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const resetPassword = async (email: string) => {
     const rateLimitKey = `reset_${email}`
     
+    if (rateLimiter.isBlocked(rateLimitKey)) {
+      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 60000)
+      throw new Error(`Password reset is temporarily blocked. Please wait ${remainingTime} minutes before trying again.`)
+    }
+
     if (!rateLimiter.canAttempt(rateLimitKey)) {
       const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
       throw new Error(`Too many reset attempts. Please wait ${remainingTime} seconds before trying again.`)
     }
 
     try {
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/auth?reset=true`,
+        handleCodeInApp: false
+      }
+
       await retryWithBackoff(() => 
-        sendPasswordResetEmail(auth, email, {
-          url: window.location.origin + '/auth',
-          handleCodeInApp: false
-        })
+        sendPasswordResetEmail(auth, email, actionCodeSettings)
       )
 
       // Reset rate limit on success
@@ -274,6 +334,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginWithGoogle = async () => {
     const rateLimitKey = 'google_login'
     
+    if (rateLimiter.isBlocked(rateLimitKey)) {
+      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 60000)
+      throw new Error(`Google sign-in is temporarily blocked. Please wait ${remainingTime} minutes before trying again.`)
+    }
+
     if (!rateLimiter.canAttempt(rateLimitKey)) {
       const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
       throw new Error(`Too many Google sign-in attempts. Please wait ${remainingTime} seconds before trying again.`)
@@ -286,7 +351,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Configure provider settings
       provider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
+        hd: undefined // Allow any domain
       })
       
       const result = await retryWithBackoff(() => signInWithPopup(auth, provider))
@@ -306,18 +372,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const rateLimitKey = `verify_${currentUser.email}`
     
+    if (rateLimiter.isBlocked(rateLimitKey)) {
+      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 60000)
+      throw new Error(`Email verification is temporarily blocked. Please wait ${remainingTime} minutes before trying again.`)
+    }
+
     if (!rateLimiter.canAttempt(rateLimitKey)) {
       const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
       throw new Error(`Too many verification attempts. Please wait ${remainingTime} seconds before trying again.`)
     }
 
     try {
-      await retryWithBackoff(() => sendEmailVerification(currentUser))
+      // Refresh user data first
+      await reload(currentUser)
+      
+      // Check if already verified
+      if (currentUser.emailVerified) {
+        throw new Error('Email is already verified.')
+      }
+
+      const actionCodeSettings: ActionCodeSettings = {
+        url: `${window.location.origin}/auth?verified=true`,
+        handleCodeInApp: false
+      }
+
+      await retryWithBackoff(() => sendEmailVerification(currentUser, actionCodeSettings))
       
       // Reset rate limit on success
       rateLimiter.reset(rateLimitKey)
     } catch (error: any) {
       throw handleAuthError(error)
+    }
+  }
+
+  const refreshUser = async () => {
+    if (!currentUser) return
+    
+    try {
+      await reload(currentUser)
+      // Force a state update by setting the user again
+      setCurrentUser({ ...currentUser })
+    } catch (error: any) {
+      console.error('Error refreshing user:', error)
     }
   }
 
@@ -327,11 +423,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(false)
     }, (error) => {
       console.error('Auth state change error:', error)
+      setCurrentUser(null)
       setLoading(false)
     })
 
     return unsubscribe
   }, [])
+
+  // Auto-refresh user data periodically to check verification status
+  useEffect(() => {
+    if (!currentUser || currentUser.emailVerified) return
+
+    const interval = setInterval(async () => {
+      try {
+        await reload(currentUser)
+        if (currentUser.emailVerified) {
+          setCurrentUser({ ...currentUser })
+        }
+      } catch (error) {
+        // Ignore errors during periodic refresh
+      }
+    }, 30000) // Check every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [currentUser])
 
   const value: AuthContextType = {
     currentUser,
@@ -341,7 +456,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     resetPassword,
     loginWithGoogle,
-    resendEmailVerification
+    resendEmailVerification,
+    refreshUser
   }
 
   return (

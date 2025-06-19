@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { getAuth, connectAuthEmulator } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
@@ -16,4 +16,18 @@ const app = initializeApp(firebaseConfig)
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app)
+
+// Enable auth persistence
+auth.useDeviceLanguage()
+
+// Only connect to emulator in development and if not already connected
+if (process.env.NODE_ENV === 'development' && !auth.config.emulator) {
+  try {
+    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
+  } catch (error) {
+    // Emulator connection failed, continue with production auth
+    console.log('Auth emulator not available, using production Firebase Auth')
+  }
+}
+
 export default app

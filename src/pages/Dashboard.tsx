@@ -1,20 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogOut, User, Mail, Shield, CheckCircle, AlertTriangle } from 'lucide-react'
+import { LogOut, User, Mail, Shield, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 
 const Dashboard: React.FC = () => {
-  const { currentUser, logout, resendEmailVerification } = useAuth()
+  const { currentUser, logout, resendEmailVerification, refreshUser } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const handleLogout = async () => {
     try {
       await logout()
       showToast('Logged out successfully', 'success')
       navigate('/auth')
-    } catch (error) {
+    } catch (error: any) {
       showToast('Failed to log out', 'error')
     }
   }
@@ -22,9 +23,25 @@ const Dashboard: React.FC = () => {
   const handleResendVerification = async () => {
     try {
       await resendEmailVerification()
-      showToast('Verification email sent! Please check your inbox.', 'success')
-    } catch (error) {
-      showToast('Failed to send verification email', 'error')
+      showToast('Verification email sent! Please check your inbox and spam folder.', 'success', 6000)
+    } catch (error: any) {
+      showToast(error.message, 'error')
+    }
+  }
+
+  const handleRefreshVerification = async () => {
+    setIsRefreshing(true)
+    try {
+      await refreshUser()
+      if (currentUser?.emailVerified) {
+        showToast('Email verification confirmed!', 'success')
+      } else {
+        showToast('Verification status updated. Still pending verification.', 'info')
+      }
+    } catch (error: any) {
+      showToast('Failed to refresh verification status', 'error')
+    } finally {
+      setIsRefreshing(false)
     }
   }
 
@@ -38,6 +55,10 @@ const Dashboard: React.FC = () => {
   if (!currentUser) {
     return null
   }
+
+  const isEmailPasswordUser = currentUser.providerData[0]?.providerId === 'password'
+  const isGoogleUser = currentUser.providerData[0]?.providerId === 'google.com'
+  const isPhoneUser = currentUser.providerData[0]?.providerId === 'phone'
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 text-slate-100">
@@ -84,8 +105,8 @@ const Dashboard: React.FC = () => {
                   <div>
                     <p className="text-sm font-medium text-slate-300">Account Type</p>
                     <p className="text-xs text-slate-400">
-                      {currentUser.providerData[0]?.providerId === 'google.com' ? 'Google Account' : 
-                       currentUser.providerData[0]?.providerId === 'phone' ? 'Phone Account' : 'Email Account'}
+                      {isGoogleUser ? 'Google Account' : 
+                       isPhoneUser ? 'Phone Account' : 'Email Account'}
                     </p>
                   </div>
                 </div>
@@ -93,8 +114,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Email Verification Status */}
-          {currentUser.providerData[0]?.providerId !== 'google.com' && currentUser.providerData[0]?.providerId !== 'phone' && (
+          {/* Email Verification Status - Only for email/password users */}
+          {isEmailPasswordUser && (
             <div className="mb-8">
               {currentUser.emailVerified ? (
                 <div className="verification-status verified">
@@ -102,15 +123,34 @@ const Dashboard: React.FC = () => {
                   <span>Email verified</span>
                 </div>
               ) : (
-                <div className="verification-status unverified">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Email not verified</span>
-                  <button
-                    onClick={handleResendVerification}
-                    className="ml-2 text-xs underline hover:no-underline"
-                  >
-                    Resend verification
-                  </button>
+                <div className="space-y-3">
+                  <div className="verification-status unverified">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Email not verified</span>
+                  </div>
+                  
+                  <div className="flex gap-2 text-xs">
+                    <button
+                      onClick={handleResendVerification}
+                      className="flex items-center gap-1 px-3 py-1 bg-orange-500/20 text-orange-400 rounded-md hover:bg-orange-500/30 transition-colors"
+                    >
+                      Resend Email
+                    </button>
+                    
+                    <button
+                      onClick={handleRefreshVerification}
+                      disabled={isRefreshing}
+                      className="flex items-center gap-1 px-3 py-1 bg-slate-600/50 text-slate-300 rounded-md hover:bg-slate-600/70 transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      {isRefreshing ? 'Checking...' : 'Check Status'}
+                    </button>
+                  </div>
+                  
+                  <p className="text-xs text-slate-400">
+                    Check your email (including spam folder) and click the verification link. 
+                    Then click "Check Status" to refresh.
+                  </p>
                 </div>
               )}
             </div>
@@ -139,6 +179,9 @@ const Dashboard: React.FC = () => {
             <div className="text-center text-sm text-slate-400">
               <p>Account created: {new Date(currentUser.metadata.creationTime!).toLocaleDateString()}</p>
               <p>Last sign in: {new Date(currentUser.metadata.lastSignInTime!).toLocaleDateString()}</p>
+              {currentUser.uid && (
+                <p className="text-xs mt-2 font-mono text-slate-500">ID: {currentUser.uid.slice(0, 8)}...</p>
+              )}
             </div>
           </div>
         </main>

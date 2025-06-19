@@ -1,0 +1,13 @@
+{
+  "name": "codecafe-auth",
+  "version": "1.0.0",
+  "description": "Authentication project for CodeCafe",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'This project is client-side. Open index.html in your browser.' && exit 0",
+    "dev": "echo 'No development server configured for this client-side project. Open index.html in your browser.' && exit 0"
+  },
+  "keywords": ["authentication", "firebase", "javascript"],
+  "author": "",
+  "license": "ISC"
+}

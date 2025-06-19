@@ -1,112 +1,114 @@
-// script.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification,
   signInWithPopup,
   GoogleAuthProvider,
-  updateProfile,
-  signOut
+  RecaptchaVerifier,
+  signInWithPhoneNumber
 } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyD1iij4QWlxQJJPS-yJrhSiCS79kS4dqaM",
   authDomain: "portfolio-56be7.firebaseapp.com",
   projectId: "portfolio-56be7",
-  storageBucket: "portfolio-56be7.appspot.com",
+  storageBucket: "portfolio-56be7.firebasestorage.app",
   messagingSenderId: "888511551571",
-  appId: "1:888511551571:web:11e809e995377e9a4ccea6"
+  appId: "1:888511551571:web:11e809e995377e9a4ccea6",
+  measurementId: "G-X3CYL9YZR1"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
 
-const signupForm = document.getElementById("signupForm");
-const loginForm = document.getElementById("loginForm");
-const toast = document.getElementById("toast");
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  toast.classList.remove("hidden");
-  setTimeout(() => toast.classList.remove("show"), 3000);
-}
-
-signupForm.addEventListener("submit", async (e) => {
+// Email Signup
+document.getElementById('signupForm')?.addEventListener('submit', (e) => {
   e.preventDefault();
-  const email = document.getElementById("signupEmail").value;
-  const username = document.getElementById("signupUsername").value;
-  const password = document.getElementById("signupPassword").value;
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
 
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCredential.user, { displayName: username });
-    await sendEmailVerification(userCredential.user);
-
-    await setDoc(doc(db, "users", userCredential.user.uid), {
-      email,
-      username,
-      createdAt: serverTimestamp()
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("Account created!");
+      window.location.href = "https://mahesh06.me/chatbot/";
+    })
+    .catch((error) => {
+      alert(error.message);
     });
-
-    showToast("Account created! Check your email to verify.");
-    signupForm.reset();
-  } catch (error) {
-    console.error(error);
-    showToast(error.message);
-  }
 });
 
-loginForm.addEventListener("submit", async (e) => {
+// Email Login
+document.getElementById('loginForm')?.addEventListener('submit', (e) => {
   e.preventDefault();
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    if (!userCredential.user.emailVerified) {
-      await sendEmailVerification(userCredential.user);
-      await signOut(auth);
-      return showToast("Please verify your email. We've sent a link.");
-    }
-    showToast("Logged in successfully!");
-    setTimeout(() => {
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      alert("Logged in!");
       window.location.href = "https://mahesh06.me/chatbot/";
-    }, 1500);
-  } catch (error) {
-    console.error(error);
-    showToast(error.message);
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+});
+
+// Google Login
+document.getElementById('googleSignIn')?.addEventListener('click', () => {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then(() => {
+      alert("Logged in with Google!");
+      window.location.href = "https://mahesh06.me/chatbot/";
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+});
+
+// reCAPTCHA setup
+window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+  'size': 'normal',
+  'callback': (response) => {
+    console.log("reCAPTCHA verified");
+  },
+  'expired-callback': () => {
+    alert("reCAPTCHA expired, please try again.");
   }
 });
 
-document.getElementById("googleLogin").addEventListener("click", async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
+// Phone Login - Send OTP
+document.getElementById('sendOtp')?.addEventListener('click', () => {
+  const phoneNumber = "+91" + document.getElementById('phoneNumber').value.trim();
+  const appVerifier = window.recaptchaVerifier;
 
-    // Check if user doc exists (if not, create)
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      username: user.displayName,
-      createdAt: serverTimestamp()
-    }, { merge: true });
+  signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+    .then((confirmationResult) => {
+      window.confirmationResult = confirmationResult;
+      alert("OTP sent");
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+});
 
-    showToast("Signed in with Google");
-    setTimeout(() => {
-      window.location.href = "https://mahesh06.me/chatbot/";
-    }, 1500);
-  } catch (error) {
-    console.error(error);
-    showToast(error.message);
+// Phone Login - Verify OTP
+document.getElementById('verifyOtp')?.addEventListener('click', () => {
+  const code = document.getElementById('otpCode').value.trim();
+
+  if (!window.confirmationResult) {
+    alert("Please request an OTP first.");
+    return;
   }
+
+  window.confirmationResult.confirm(code)
+    .then(() => {
+      alert("Phone login successful!");
+      window.location.href = "https://mahesh06.me/chatbot/";
+    })
+    .catch((error) => {
+      alert("Incorrect OTP: " + error.message);
+    });
 });

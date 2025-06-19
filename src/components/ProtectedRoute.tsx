@@ -9,7 +9,17 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { currentUser } = useAuth()
 
+  // No user logged in
   if (!currentUser) {
+    return <Navigate to="/auth" replace />
+  }
+
+  // Check if user has email/password account and is not verified
+  const isEmailPasswordAccount = currentUser.providerData.some(
+    provider => provider.providerId === 'password'
+  )
+
+  if (isEmailPasswordAccount && !currentUser.emailVerified) {
     return <Navigate to="/auth" replace />
   }
 

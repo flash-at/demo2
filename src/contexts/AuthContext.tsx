@@ -237,19 +237,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           displayName: displayName.trim()
         })
 
-        // Prepare email verification settings
+        // Prepare email verification settings with proper domain
         const actionCodeSettings: ActionCodeSettings = {
           url: `${window.location.origin}/auth?verified=true`,
           handleCodeInApp: false
         }
 
-        // Send email verification with proper error handling
-        try {
-          await sendEmailVerification(userCredential.user, actionCodeSettings)
-        } catch (verificationError: any) {
-          console.warn('Email verification failed:', verificationError)
-          // Don't throw here - account is created, just verification failed
-        }
+        // Send email verification - this is critical for security
+        await sendEmailVerification(userCredential.user, actionCodeSettings)
 
         return userCredential
       })
@@ -282,6 +277,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Refresh user data to get latest verification status
         await reload(userCredential.user)
         
+        // CRITICAL: Check email verification for email/password accounts
+        const isEmailPasswordAccount = userCredential.user.providerData.some(
+          provider => provider.providerId === 'password'
+        )
+        
+        if (isEmailPasswordAccount && !userCredential.user.emailVerified) {
+          // Sign out the user immediately
+          await signOut(auth)
+          throw new Error('Please verify your email before signing in. Check your inbox and spam folder for the verification email.')
+        }
+
         return userCredential
       })
 
@@ -351,8 +357,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Configure provider settings
       provider.setCustomParameters({
-        prompt: 'select_account',
-        hd: undefined // Allow any domain
+        prompt: 'select_account'
       })
       
       const result = await retryWithBackoff(() => signInWithPopup(auth, provider))

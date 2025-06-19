@@ -6,6 +6,52 @@ import { auth } from '../config/firebase'
 import { useToast } from '../contexts/ToastContext'
 import LoadingSpinner from '../components/LoadingSpinner'
 
+// Rate limiting for phone auth
+class PhoneRateLimiter {
+  private attempts: Map<string, { count: number; lastAttempt: number }> = new Map()
+  private readonly maxAttempts = 3
+  private readonly windowMs = 300000 // 5 minutes for phone auth
+
+  canAttempt(phoneNumber: string): boolean {
+    const now = Date.now()
+    const record = this.attempts.get(phoneNumber)
+
+    if (!record) {
+      this.attempts.set(phoneNumber, { count: 1, lastAttempt: now })
+      return true
+    }
+
+    // Reset if window has passed
+    if (now - record.lastAttempt > this.windowMs) {
+      this.attempts.set(phoneNumber, { count: 1, lastAttempt: now })
+      return true
+    }
+
+    // Check if under limit
+    if (record.count < this.maxAttempts) {
+      record.count++
+      record.lastAttempt = now
+      return true
+    }
+
+    return false
+  }
+
+  getRemainingTime(phoneNumber: string): number {
+    const record = this.attempts.get(phoneNumber)
+    if (!record) return 0
+    
+    const elapsed = Date.now() - record.lastAttempt
+    return Math.max(0, this.windowMs - elapsed)
+  }
+
+  reset(phoneNumber: string): void {
+    this.attempts.delete(phoneNumber)
+  }
+}
+
+const phoneRateLimiter = new PhoneRateLimiter()
+
 const PhoneAuthPage: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [otp, setOtp] = useState('')
@@ -15,15 +61,25 @@ const PhoneAuthPage: React.FC = () => {
   const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null)
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
   const [status, setStatus] = useState({ message: 'Initializing...', type: 'warning' })
+  const [recaptchaResolved, setRecaptchaResolved] = useState(false)
 
   const navigate = useNavigate()
   const { showToast } = useToast()
 
   useEffect(() => {
-    initializeRecaptcha()
+    // Delay initialization to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initializeRecaptcha()
+    }, 1000)
+
     return () => {
+      clearTimeout(timer)
       if (recaptchaVerifier) {
-        recaptchaVerifier.clear()
+        try {
+          recaptchaVerifier.clear()
+        } catch (error) {
+          console.log('Error clearing recaptcha:', error)
+        }
       }
     }
   }, [])
@@ -40,18 +96,35 @@ const PhoneAuthPage: React.FC = () => {
 
   const initializeRecaptcha = () => {
     try {
+      // Clear any existing recaptcha
+      const container = document.getElementById('recaptcha-container')
+      if (container) {
+        container.innerHTML = ''
+      }
+
       const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'normal',
-        callback: () => {
+        callback: (response: string) => {
+          console.log('reCAPTCHA solved:', response)
+          setRecaptchaResolved(true)
           setStatus({ message: 'reCAPTCHA verified - ready to send OTP', type: 'success' })
         },
         'expired-callback': () => {
+          console.log('reCAPTCHA expired')
+          setRecaptchaResolved(false)
           setStatus({ message: 'reCAPTCHA expired - please verify again', type: 'warning' })
           showToast('reCAPTCHA expired. Please verify again.', 'warning')
+        },
+        'error-callback': (error: any) => {
+          console.error('reCAPTCHA error:', error)
+          setRecaptchaResolved(false)
+          setStatus({ message: 'reCAPTCHA error occurred', type: 'error' })
+          showToast('reCAPTCHA error. Please refresh the page.', 'error')
         }
       })
 
-      verifier.render().then(() => {
+      verifier.render().then((widgetId) => {
+        console.log('reCAPTCHA rendered successfully, widget ID:', widgetId)
         setRecaptchaVerifier(verifier)
         setStatus({ message: 'Please complete the reCAPTCHA verification', type: 'warning' })
       }).catch(error => {
@@ -62,7 +135,7 @@ const PhoneAuthPage: React.FC = () => {
     } catch (error) {
       console.error('reCAPTCHA initialization error:', error)
       setStatus({ message: 'reCAPTCHA setup failed', type: 'error' })
-      showToast('reCAPTCHA initialization failed.', 'error')
+      showToast('reCAPTCHA initialization failed. Please refresh the page.', 'error')
     }
   }
 
@@ -76,12 +149,19 @@ const PhoneAuthPage: React.FC = () => {
       return
     }
 
-    if (!recaptchaVerifier) {
-      showToast('reCAPTCHA not ready. Please refresh the page.', 'error')
+    if (!recaptchaVerifier || !recaptchaResolved) {
+      showToast('Please complete the reCAPTCHA verification first.', 'error')
       return
     }
 
+    // Check rate limiting
     const fullPhoneNumber = `+91${phoneNumber}`
+    if (!phoneRateLimiter.canAttempt(fullPhoneNumber)) {
+      const remainingTime = Math.ceil(phoneRateLimiter.getRemainingTime(fullPhoneNumber) / 60000)
+      showToast(`Too many attempts. Please wait ${remainingTime} minutes before trying again.`, 'error')
+      return
+    }
+
     setIsLoading(true)
     setStatus({ message: 'Sending OTP...', type: 'warning' })
 
@@ -92,19 +172,33 @@ const PhoneAuthPage: React.FC = () => {
       setResendCountdown(60)
       setStatus({ message: 'OTP sent successfully', type: 'success' })
       showToast('OTP sent successfully! Check your phone.', 'success')
+      
+      // Reset rate limiter on success
+      phoneRateLimiter.reset(fullPhoneNumber)
     } catch (error: any) {
       console.error('Error sending OTP:', error)
       setStatus({ message: 'Failed to send OTP', type: 'error' })
       
       const errorMessages: Record<string, string> = {
         'auth/invalid-phone-number': 'Invalid phone number format.',
-        'auth/too-many-requests': 'Too many requests. Please try again later.',
+        'auth/too-many-requests': 'Too many requests. Please try again after some time.',
         'auth/captcha-check-failed': 'reCAPTCHA verification failed. Please try again.',
-        'auth/quota-exceeded': 'SMS quota exceeded. Please try again later.'
+        'auth/quota-exceeded': 'SMS quota exceeded. Please try again later.',
+        'auth/network-request-failed': 'Network error. Please check your connection.',
+        'auth/timeout': 'Request timed out. Please try again.',
+        'auth/app-not-authorized': 'App not authorized. Please contact support.',
+        'auth/missing-phone-number': 'Phone number is required.',
+        'auth/invalid-app-credential': 'Invalid app credential. Please refresh and try again.'
       }
       
       const message = errorMessages[error.code] || `Error sending OTP: ${error.message}`
       showToast(message, 'error')
+      
+      // Reset reCAPTCHA on error
+      setTimeout(() => {
+        setRecaptchaResolved(false)
+        initializeRecaptcha()
+      }, 2000)
     } finally {
       setIsLoading(false)
     }
@@ -125,9 +219,11 @@ const PhoneAuthPage: React.FC = () => {
     setStatus({ message: 'Verifying OTP...', type: 'warning' })
 
     try {
-      await confirmationResult.confirm(otp)
+      const result = await confirmationResult.confirm(otp)
       setStatus({ message: 'Authentication successful', type: 'success' })
       showToast('Phone authentication successful! Welcome.', 'success')
+      
+      console.log('Phone login successful:', result.user.uid)
       
       setTimeout(() => {
         navigate('/dashboard')
@@ -139,11 +235,15 @@ const PhoneAuthPage: React.FC = () => {
       const errorMessages: Record<string, string> = {
         'auth/invalid-verification-code': 'Invalid OTP. Please check and try again.',
         'auth/code-expired': 'OTP has expired. Please request a new one.',
-        'auth/too-many-requests': 'Too many failed attempts. Please try again later.'
+        'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
+        'auth/session-expired': 'Session expired. Please request a new OTP.',
+        'auth/invalid-verification-id': 'Invalid verification. Please request a new OTP.'
       }
       
       const message = errorMessages[error.code] || 'OTP verification failed. Please try again.'
       showToast(message, 'error')
+      
+      // Clear OTP input on error
       setOtp('')
     } finally {
       setIsLoading(false)
@@ -156,10 +256,17 @@ const PhoneAuthPage: React.FC = () => {
       return
     }
 
+    // Reset state
     setIsOtpSent(false)
     setConfirmationResult(null)
     setOtp('')
-    initializeRecaptcha()
+    setRecaptchaResolved(false)
+    
+    // Reinitialize reCAPTCHA
+    setTimeout(() => {
+      initializeRecaptcha()
+    }, 1000)
+    
     showToast('Please complete reCAPTCHA verification again to resend OTP.', 'info')
     setStatus({ message: 'Please complete reCAPTCHA to resend OTP', type: 'warning' })
   }
@@ -233,12 +340,14 @@ const PhoneAuthPage: React.FC = () => {
                 </div>
 
                 {/* reCAPTCHA Container */}
-                <div id="recaptcha-container" className="flex justify-center items-center min-h-[78px] rounded-xl bg-slate-700/30 border border-slate-600/50" />
+                <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-4">
+                  <div id="recaptcha-container" className="flex justify-center items-center min-h-[78px]" />
+                </div>
 
                 {/* Send OTP Button */}
                 <button
                   onClick={handleSendOtp}
-                  disabled={isLoading || !phoneNumber || !validatePhoneNumber(phoneNumber)}
+                  disabled={isLoading || !phoneNumber || !validatePhoneNumber(phoneNumber) || !recaptchaResolved}
                   className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (

@@ -74,6 +74,7 @@ const AuthPage: React.FC = () => {
         8000
       )
       signupForm.reset()
+      setWatchPassword('')
       setActiveTab('login')
     } catch (error: any) {
       showToast(error.message, 'error')
@@ -91,6 +92,7 @@ const AuthPage: React.FC = () => {
         'success',
         6000
       )
+      resetForm.reset()
       setActiveTab('login')
     } catch (error: any) {
       showToast(error.message, 'error')
@@ -152,7 +154,8 @@ const AuthPage: React.FC = () => {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as FormType)}
-                  className={`tab-button flex-1 py-3 px-4 text-center border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg ${
+                  disabled={isLoading}
+                  className={`tab-button flex-1 py-3 px-4 text-center border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                     activeTab === tab.key
                       ? 'active border-orange-500 text-orange-400 bg-orange-500/10'
                       : 'border-transparent text-slate-300 hover:text-orange-400 hover:border-orange-400'
@@ -175,7 +178,8 @@ const AuthPage: React.FC = () => {
                   type="email"
                   {...loginForm.register('email', { required: 'Email is required' })}
                   placeholder="you@example.com"
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  disabled={isLoading}
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -188,12 +192,14 @@ const AuthPage: React.FC = () => {
                     type={showPassword.loginPassword ? 'text' : 'password'}
                     {...loginForm.register('password', { required: 'Password is required' })}
                     placeholder="••••••••"
-                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                    disabled={isLoading}
+                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
                     onClick={() => togglePasswordVisibility('loginPassword')}
-                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    disabled={isLoading}
+                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {showPassword.loginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -205,14 +211,16 @@ const AuthPage: React.FC = () => {
                   <input
                     type="checkbox"
                     {...loginForm.register('rememberMe')}
-                    className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800"
+                    disabled={isLoading}
+                    className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <span className="ml-2 text-sm text-slate-300">Remember me</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setActiveTab('reset')}
-                  className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors"
+                  disabled={isLoading}
+                  className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Forgot password?
                 </button>
@@ -246,7 +254,8 @@ const AuthPage: React.FC = () => {
                   type="email"
                   {...signupForm.register('email', { required: 'Email is required' })}
                   placeholder="you@example.com"
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  disabled={isLoading}
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -258,7 +267,8 @@ const AuthPage: React.FC = () => {
                   type="text"
                   {...signupForm.register('displayName', { required: 'Display name is required' })}
                   placeholder="Your display name"
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  disabled={isLoading}
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -274,13 +284,15 @@ const AuthPage: React.FC = () => {
                       minLength: { value: 8, message: 'Password must be at least 8 characters' }
                     })}
                     placeholder="Create a strong password (min. 8 chars)"
+                    disabled={isLoading}
                     onChange={(e) => setWatchPassword(e.target.value)}
-                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
                     onClick={() => togglePasswordVisibility('signupPassword')}
-                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    disabled={isLoading}
+                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {showPassword.signupPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -297,12 +309,14 @@ const AuthPage: React.FC = () => {
                     type={showPassword.confirmPassword ? 'text' : 'password'}
                     {...signupForm.register('confirmPassword', { required: 'Please confirm your password' })}
                     placeholder="Confirm your password"
-                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                    disabled={isLoading}
+                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
                     onClick={() => togglePasswordVisibility('confirmPassword')}
-                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    disabled={isLoading}
+                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {showPassword.confirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -313,7 +327,8 @@ const AuthPage: React.FC = () => {
                 <input
                   type="checkbox"
                   {...signupForm.register('agreeTerms', { required: 'You must agree to the terms' })}
-                  className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800"
+                  disabled={isLoading}
+                  className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label className="ml-2 text-sm text-slate-300">
                   I agree to the{' '}
@@ -362,7 +377,8 @@ const AuthPage: React.FC = () => {
                   type="email"
                   {...resetForm.register('email', { required: 'Email is required' })}
                   placeholder="Enter your registered email"
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                  disabled={isLoading}
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -385,7 +401,8 @@ const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('login')}
-                  className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
+                  disabled={isLoading}
+                  className="text-sm text-slate-400 hover:text-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ← Back to Login
                 </button>
@@ -427,7 +444,8 @@ const AuthPage: React.FC = () => {
 
             <button
               onClick={handlePhoneAuth}
-              className="btn-secondary w-full flex items-center justify-center py-3 px-4 border border-slate-600 rounded-xl shadow-sm text-sm font-medium text-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500"
+              disabled={isLoading}
+              className="btn-secondary w-full flex items-center justify-center py-3 px-4 border border-slate-600 rounded-xl shadow-sm text-sm font-medium text-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

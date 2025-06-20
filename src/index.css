@@ -123,3 +123,22 @@ input:-webkit-autofill:active {
   color: #f59e0b;
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
+
+/* Grid animation for hero section */
+@keyframes grid {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-grid {
+  animation: grid 15s linear infinite;
+}
+
+/* Font family for hero section */
+.font-geist {
+  font-family: 'Inter', sans-serif;
+}

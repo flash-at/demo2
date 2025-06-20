@@ -17,10 +17,10 @@ function HeroSectionDemo() {
       }}
       gridOptions={{
         angle: 65,
-        opacity: 0.4,
+        opacity: 0.3,
         cellSize: 50,
-        lightLineColor: "#4a4a4a",
-        darkLineColor: "#2a2a2a",
+        lightLineColor: "#6366f1",
+        darkLineColor: "#4338ca",
       }}
     />
   )

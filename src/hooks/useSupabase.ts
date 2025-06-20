@@ -28,8 +28,48 @@ export function useSupabaseAuth() {
           updated_at: new Date().toISOString(),
         }
       })
+
+      // Create user_extended record if it doesn't exist
+      createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')
     }
   }, [currentUser])
+}
+
+// Helper function to create user_extended record
+async function createUserExtendedRecord(userId: string, email: string, displayName: string) {
+  try {
+    const { data: existingUser } = await supabase
+      .from('users_extended')
+      .select('id')
+      .eq('user_id', userId)
+      .single()
+
+    if (!existingUser) {
+      const { error } = await supabase
+        .from('users_extended')
+        .insert([{
+          user_id: userId,
+          username: displayName || `User${userId.slice(-4)}`,
+          level: 1,
+          experience_points: 0,
+          total_score: 0,
+          streak_days: 0,
+          last_activity_date: new Date().toISOString().split('T')[0],
+          preferred_language: 'java',
+          is_premium: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+
+      if (error) {
+        console.error('Error creating user_extended record:', error)
+      } else {
+        console.log('Created user_extended record for:', userId)
+      }
+    }
+  } catch (error) {
+    console.error('Error checking/creating user_extended record:', error)
+  }
 }
 
 // Helper function to get the correct timestamp column for ordering
@@ -80,7 +120,11 @@ export function useRealTimeSubscription<T>(
       } catch (err: any) {
         setError(err.message)
         console.error(`Error fetching ${table}:`, err)
-        toast.error(`Error loading ${table}: ${err.message}`)
+        
+        // Only show toast for critical errors, not for empty results
+        if (!err.message.includes('No rows') && !err.message.includes('not found')) {
+          toast.error(`Error loading ${table}: ${err.message}`)
+        }
       } finally {
         setLoading(false)
       }
@@ -100,15 +144,21 @@ export function useRealTimeSubscription<T>(
             
             if (payload.eventType === 'INSERT') {
               setData(prev => [payload.new as T, ...prev])
-              toast.success(`New ${table.slice(0, -1)} added!`)
+              if (table !== 'users_extended') { // Don't show toast for user creation
+                toast.success(`New ${table.slice(0, -1)} added!`)
+              }
             } else if (payload.eventType === 'UPDATE') {
               setData(prev => prev.map(item => 
                 (item as any).id === payload.new.id ? payload.new as T : item
               ))
-              toast.success(`${table.slice(0, -1)} updated!`)
+              if (table !== 'users_extended') {
+                toast.success(`${table.slice(0, -1)} updated!`)
+              }
             } else if (payload.eventType === 'DELETE') {
               setData(prev => prev.filter(item => (item as any).id !== payload.old.id))
-              toast.success(`${table.slice(0, -1)} deleted!`)
+              if (table !== 'users_extended') {
+                toast.success(`${table.slice(0, -1)} deleted!`)
+              }
             }
           }
         )
@@ -128,7 +178,12 @@ export function useRealTimeSubscription<T>(
     }
   }, [table, filter, userId])
 
-  return { data, loading, error, refetch: () => setLoading(true) }
+  const refetch = () => {
+    setLoading(true)
+    // The useEffect will handle the refetch
+  }
+
+  return { data, loading, error, refetch }
 }
 
 export function useSupabaseQuery<T>(
@@ -189,7 +244,8 @@ export function useAnalyticsData(userId?: string) {
     favoriteNotes: notes.filter((note: any) => note.is_favorite).length,
     totalActivities: activities.length,
     highPriorityTasks: tasks.filter((task: any) => task.priority === 'high' && task.status !== 'completed').length,
-    completionRate: tasks.length > 0 ? Math.round((tasks.filter((task: any) => task.status === 'completed').length / tasks.length) * 100) : 0
+    completionRate: tasks.length > 0 ? Math.round((tasks.filter((task: any) => task.status === 'completed').length / tasks.length) * 100) : 0,
+    totalScore: tasks.filter((task: any) => task.status === 'completed').length * 10 + notes.length * 5 // Simple scoring
   }
 
   return { tasks, notes, activities, metrics, loading }

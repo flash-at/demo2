@@ -41,6 +41,8 @@ import ProblemsManager from '../components/learning/ProblemsManager'
 import LeaderboardView from '../components/learning/LeaderboardView'
 import RewardsManager from '../components/learning/RewardsManager'
 import AdminPanel from '../components/admin/AdminPanel'
+import NotificationCenter from '../components/dashboard/NotificationCenter'
+import SettingsPanel from '../components/dashboard/SettingsPanel'
 import toast, { Toaster } from 'react-hot-toast'
 
 type ActiveTab = 'overview' | 'tasks' | 'notes' | 'analytics' | 'activity' | 'courses' | 'problems' | 'leaderboard' | 'rewards' | 'admin'
@@ -53,6 +55,9 @@ const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [unreadNotifications, setUnreadNotifications] = useState(3)
 
   // Initialize Supabase auth and get real-time data
   useSupabaseAuth()
@@ -634,19 +639,36 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Notifications */}
-              <button className="relative p-2 text-slate-400 hover:text-slate-200 transition-colors">
+              <button 
+                onClick={() => setShowNotifications(true)}
+                className="relative p-2 text-slate-400 hover:text-slate-200 transition-colors"
+              >
                 <Bell className="w-5 h-5" />
-                {metrics.highPriorityTasks > 0 && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">{metrics.highPriorityTasks}</span>
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white font-bold">{unreadNotifications}</span>
                   </span>
                 )}
               </button>
 
               {/* Settings */}
-              <button className="p-2 text-slate-400 hover:text-slate-200 transition-colors">
+              <button 
+                onClick={() => setShowSettings(true)}
+                className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+              >
                 <Settings className="w-5 h-5" />
               </button>
+
+              {/* Admin Login Link */}
+              {!isAdmin && (
+                <button
+                  onClick={() => navigate('/admin-login')}
+                  className="flex items-center gap-2 px-3 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+                >
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </button>
+              )}
             </div>
           </div>
         </header>
@@ -656,6 +678,20 @@ const Dashboard: React.FC = () => {
           {renderContent()}
         </main>
       </div>
+
+      {/* Notification Center */}
+      <NotificationCenter
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        unreadCount={unreadNotifications}
+        onMarkAllRead={() => setUnreadNotifications(0)}
+      />
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   )
 }

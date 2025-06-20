@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import AuthPage from './pages/AuthPage'
 import PhoneAuthPage from './pages/PhoneAuthPage'
+import AdminLoginPage from './pages/AdminLoginPage'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -15,6 +16,7 @@ function App() {
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/phone-auth" element={<PhoneAuthPage />} />
+            <Route path="/admin-login" element={<AdminLoginPage />} />
             <Route 
               path="/dashboard" 
               element={

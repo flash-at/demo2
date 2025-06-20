@@ -68,8 +68,8 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
       ctaText = "Browse courses",
       ctaHref = "#",
       bottomImage = {
-        light: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop&crop=center",
-        dark: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1200&h=600&fit=crop&crop=center",
+        light: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop&crop=center&auto=format&q=80",
+        dark: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop&crop=center&auto=format&q=80",
       },
       gridOptions,
       ...props
@@ -112,16 +112,82 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
             </div>
             {bottomImage && (
               <div className="mt-32 mx-10 relative z-10">
-                <img
-                  src={bottomImage.light}
-                  className="w-full shadow-lg rounded-lg border border-gray-200 dark:hidden"
-                  alt="Dashboard preview"
-                />
-                <img
-                  src={bottomImage.dark}
-                  className="hidden w-full shadow-lg rounded-lg border border-gray-800 dark:block"
-                  alt="Dashboard preview"
-                />
+                <div className="relative w-full h-[400px] bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
+                  {/* Dashboard Preview Mockup */}
+                  <div className="absolute inset-0 p-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg"></div>
+                        <h1 className="text-xl font-bold text-white">CodeCafe Dashboard</h1>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-slate-600 rounded-full"></div>
+                        <div className="w-8 h-8 bg-slate-600 rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-4 gap-4 mb-6">
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="w-6 h-6 bg-blue-400 rounded mb-2"></div>
+                        <div className="text-2xl font-bold text-white">12</div>
+                        <div className="text-xs text-slate-400">Tasks</div>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="w-6 h-6 bg-green-400 rounded mb-2"></div>
+                        <div className="text-2xl font-bold text-white">8</div>
+                        <div className="text-xs text-slate-400">Completed</div>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="w-6 h-6 bg-purple-400 rounded mb-2"></div>
+                        <div className="text-2xl font-bold text-white">5</div>
+                        <div className="text-xs text-slate-400">Notes</div>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="w-6 h-6 bg-orange-400 rounded mb-2"></div>
+                        <div className="text-2xl font-bold text-white">85%</div>
+                        <div className="text-xs text-slate-400">Success</div>
+                      </div>
+                    </div>
+                    
+                    {/* Chart Area */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="col-span-2 bg-slate-700/30 rounded-lg p-4">
+                        <div className="text-sm font-medium text-white mb-3">Weekly Progress</div>
+                        <div className="flex items-end gap-2 h-20">
+                          <div className="bg-orange-400 w-4 h-8 rounded-t"></div>
+                          <div className="bg-orange-400 w-4 h-12 rounded-t"></div>
+                          <div className="bg-orange-400 w-4 h-16 rounded-t"></div>
+                          <div className="bg-orange-400 w-4 h-10 rounded-t"></div>
+                          <div className="bg-orange-400 w-4 h-14 rounded-t"></div>
+                          <div className="bg-orange-400 w-4 h-18 rounded-t"></div>
+                          <div className="bg-orange-400 w-4 h-12 rounded-t"></div>
+                        </div>
+                      </div>
+                      <div className="bg-slate-700/30 rounded-lg p-4">
+                        <div className="text-sm font-medium text-white mb-3">Recent Activity</div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <div className="text-xs text-slate-300">Task completed</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <div className="text-xs text-slate-300">Note created</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                            <div className="text-xs text-slate-300">Course started</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Overlay gradient for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent pointer-events-none"></div>
+                </div>
               </div>
             )}
           </div>

@@ -13,6 +13,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 10,
     },
   },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
 })
 
 // Database types
@@ -162,6 +166,21 @@ export interface Reward {
   claimed_at?: string
 }
 
+export interface RedemptionRequest {
+  id: string
+  user_id: string
+  redemption_type: 'cash' | 'gift_voucher' | 'paypal' | 'bank_transfer'
+  points_used: number
+  cash_value: number
+  status: 'pending' | 'approved' | 'processing' | 'completed' | 'rejected'
+  payment_details: any
+  admin_notes?: string
+  processed_by?: string
+  created_at: string
+  updated_at: string
+  completed_at?: string
+}
+
 export interface UserProgress {
   id: string
   user_id: string
@@ -213,4 +232,37 @@ export interface Analytics {
   metric_value: number
   date: string
   created_at: string
+}
+
+// Helper function to set up admin session
+export const setupAdminSession = async (userEmail: string) => {
+  try {
+    // Create a custom session for admin operations
+    const { data, error } = await supabase.auth.setSession({
+      access_token: `admin_${userEmail}`,
+      refresh_token: `admin_refresh_${userEmail}`,
+      expires_in: 3600,
+      expires_at: Date.now() + 3600000,
+      token_type: 'bearer',
+      user: {
+        id: userEmail,
+        email: userEmail,
+        user_metadata: {
+          email: userEmail,
+          role: 'admin'
+        },
+        app_metadata: {
+          role: 'admin'
+        },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+    })
+    
+    return { data, error }
+  } catch (error) {
+    console.error('Error setting up admin session:', error)
+    return { data: null, error }
+  }
 }

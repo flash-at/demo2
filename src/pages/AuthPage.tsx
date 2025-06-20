@@ -78,9 +78,9 @@ const AuthPage: React.FC = () => {
   // Show loading while auth state is being determined
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-400">Loading...</p>
         </div>
       </div>
@@ -181,18 +181,18 @@ const AuthPage: React.FC = () => {
         {/* Header */}
         <header className="text-center mb-8">
           <div className="mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-2xl mx-auto flex items-center justify-center mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto flex items-center justify-center mb-4">
               <Code className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
             CodeCafe
           </h1>
           <p className="text-slate-400 mt-2">Your coding journey starts here</p>
         </header>
 
         {/* Main Auth Container */}
-        <main className="bg-slate-800/50 backdrop-blur-xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700/50">
+        <main className="bg-slate-800/80 backdrop-blur-xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700/50">
           {/* Tab Navigation */}
           <div className="mb-6 border-b border-slate-700">
             <nav className="-mb-px flex space-x-1">
@@ -207,8 +207,8 @@ const AuthPage: React.FC = () => {
                   disabled={isLoading}
                   className={`tab-button flex-1 py-3 px-4 text-center border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                     activeTab === tab.key
-                      ? 'active border-purple-500 text-purple-400 bg-purple-500/10'
-                      : 'border-transparent text-slate-300 hover:text-purple-400 hover:border-purple-400'
+                      ? 'active border-orange-500 text-orange-400 bg-orange-500/10'
+                      : 'border-transparent text-slate-300 hover:text-orange-400 hover:border-orange-400'
                   }`}
                 >
                   {tab.label}
@@ -229,7 +229,7 @@ const AuthPage: React.FC = () => {
                   {...loginForm.register('email', { required: 'Email is required' })}
                   placeholder="you@example.com"
                   disabled={isLoading}
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 {loginForm.formState.errors.email && (
                   <p className="mt-1 text-sm text-red-400">{loginForm.formState.errors.email.message}</p>
@@ -246,7 +246,7 @@ const AuthPage: React.FC = () => {
                     {...loginForm.register('password', { required: 'Password is required' })}
                     placeholder="••••••••"
                     disabled={isLoading}
-                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -268,7 +268,7 @@ const AuthPage: React.FC = () => {
                     type="checkbox"
                     {...loginForm.register('rememberMe')}
                     disabled={isLoading}
-                    className="rounded border-slate-600 text-purple-500 focus:ring-purple-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <span className="ml-2 text-sm text-slate-300">Remember me</span>
                 </label>
@@ -276,7 +276,7 @@ const AuthPage: React.FC = () => {
                   type="button"
                   onClick={() => setActiveTab('reset')}
                   disabled={isLoading}
-                  className="text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Forgot password?
                 </button>
@@ -285,7 +285,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500 disabled:opacity-60 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center">
@@ -317,7 +317,7 @@ const AuthPage: React.FC = () => {
                   })}
                   placeholder="you@example.com"
                   disabled={isLoading}
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 {signupForm.formState.errors.email && (
                   <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.email.message}</p>
@@ -339,7 +339,7 @@ const AuthPage: React.FC = () => {
                   })}
                   placeholder="Your display name"
                   disabled={isLoading}
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 {signupForm.formState.errors.displayName && (
                   <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.displayName.message}</p>
@@ -360,7 +360,7 @@ const AuthPage: React.FC = () => {
                     placeholder="Create a strong password (min. 8 chars)"
                     disabled={isLoading}
                     onChange={(e) => setWatchPassword(e.target.value)}
-                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -387,7 +387,7 @@ const AuthPage: React.FC = () => {
                     {...signupForm.register('confirmPassword', { required: 'Please confirm your password' })}
                     placeholder="Confirm your password"
                     disabled={isLoading}
-                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="input-field block w-full px-4 py-3 pr-12 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -408,15 +408,15 @@ const AuthPage: React.FC = () => {
                   type="checkbox"
                   {...signupForm.register('agreeTerms', { required: 'You must agree to the terms' })}
                   disabled={isLoading}
-                  className="rounded border-slate-600 text-purple-500 focus:ring-purple-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded border-slate-600 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label className="ml-2 text-sm text-slate-300">
                   I agree to the{' '}
-                  <a href="#" className="text-purple-400 hover:text-purple-300">
+                  <a href="#" className="text-orange-400 hover:text-orange-300">
                     Terms of Service
                   </a>{' '}
                   and{' '}
-                  <a href="#" className="text-purple-400 hover:text-purple-300">
+                  <a href="#" className="text-orange-400 hover:text-orange-300">
                     Privacy Policy
                   </a>
                 </label>
@@ -428,7 +428,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500 disabled:opacity-60 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center">
@@ -467,7 +467,7 @@ const AuthPage: React.FC = () => {
                   })}
                   placeholder="Enter your registered email"
                   disabled={isLoading}
-                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 {resetForm.formState.errors.email && (
                   <p className="mt-1 text-sm text-red-400">{resetForm.formState.errors.email.message}</p>
@@ -477,7 +477,7 @@ const AuthPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500 disabled:opacity-60 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                className="btn-primary w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center">
@@ -509,7 +509,7 @@ const AuthPage: React.FC = () => {
                 <div className="w-full border-t border-slate-600" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-slate-800/50 text-slate-400">Or continue with</span>
+                <span className="px-4 bg-slate-800 text-slate-400">Or continue with</span>
               </div>
             </div>
           </div>
@@ -519,7 +519,7 @@ const AuthPage: React.FC = () => {
             <button
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="btn-secondary w-full flex items-center justify-center py-3 px-4 border border-slate-600 rounded-xl shadow-sm text-sm font-medium text-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500 disabled:opacity-60 disabled:cursor-not-allowed bg-slate-700/50 hover:bg-slate-600/50"
+              className="btn-secondary w-full flex items-center justify-center py-3 px-4 border border-slate-600 rounded-xl shadow-sm text-sm font-medium text-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <LoadingSpinner size="sm" className="mr-2" />
@@ -537,7 +537,7 @@ const AuthPage: React.FC = () => {
             <button
               onClick={handlePhoneAuth}
               disabled={isLoading}
-              className="btn-secondary w-full flex items-center justify-center py-3 px-4 border border-slate-600 rounded-xl shadow-sm text-sm font-medium text-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500 disabled:opacity-60 disabled:cursor-not-allowed bg-slate-700/50 hover:bg-slate-600/50"
+              className="btn-secondary w-full flex items-center justify-center py-3 px-4 border border-slate-600 rounded-xl shadow-sm text-sm font-medium text-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />

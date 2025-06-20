@@ -13,7 +13,16 @@ import {
   Menu,
   X,
   Home,
-  TrendingUp
+  TrendingUp,
+  BookOpen,
+  Code,
+  Trophy,
+  Gift,
+  Users,
+  Shield,
+  Star,
+  Target,
+  Award
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -23,9 +32,14 @@ import TaskManager from '../components/dashboard/TaskManager'
 import NotesManager from '../components/dashboard/NotesManager'
 import ActivityFeed from '../components/dashboard/ActivityFeed'
 import AnalyticsChart from '../components/dashboard/AnalyticsChart'
+import CoursesManager from '../components/learning/CoursesManager'
+import ProblemsManager from '../components/learning/ProblemsManager'
+import LeaderboardView from '../components/learning/LeaderboardView'
+import RewardsManager from '../components/learning/RewardsManager'
+import AdminPanel from '../components/admin/AdminPanel'
 import toast, { Toaster } from 'react-hot-toast'
 
-type ActiveTab = 'overview' | 'tasks' | 'notes' | 'analytics' | 'activity'
+type ActiveTab = 'overview' | 'tasks' | 'notes' | 'analytics' | 'activity' | 'courses' | 'problems' | 'leaderboard' | 'rewards' | 'admin'
 
 const Dashboard: React.FC = () => {
   const { currentUser, logout } = useAuth()
@@ -34,10 +48,23 @@ const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
 
   // Initialize Supabase auth and get real-time data
   useSupabaseAuth()
   const { metrics, loading: metricsLoading } = useAnalyticsData(currentUser?.uid)
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (currentUser?.email) {
+        // Check if user is admin (you can customize this logic)
+        const adminEmails = ['admin@codecafe.com', 'superadmin@codecafe.com']
+        setIsAdmin(adminEmails.includes(currentUser.email))
+      }
+    }
+    checkAdminStatus()
+  }, [currentUser])
 
   const handleLogout = async () => {
     try {
@@ -54,33 +81,77 @@ const Dashboard: React.FC = () => {
       id: 'overview', 
       label: 'Overview', 
       icon: Home,
-      badge: null
+      badge: null,
+      section: 'main'
     },
     { 
       id: 'tasks', 
       label: 'Tasks', 
       icon: CheckSquare,
-      badge: metrics.pendingTasks > 0 ? metrics.pendingTasks : null
+      badge: metrics.pendingTasks > 0 ? metrics.pendingTasks : null,
+      section: 'productivity'
     },
     { 
       id: 'notes', 
       label: 'Notes', 
       icon: FileText,
-      badge: metrics.totalNotes > 0 ? metrics.totalNotes : null
+      badge: metrics.totalNotes > 0 ? metrics.totalNotes : null,
+      section: 'productivity'
     },
     { 
       id: 'analytics', 
       label: 'Analytics', 
       icon: TrendingUp,
-      badge: null
+      badge: null,
+      section: 'productivity'
     },
     { 
       id: 'activity', 
       label: 'Activity', 
       icon: Activity,
-      badge: metrics.totalActivities > 0 ? metrics.totalActivities : null
+      badge: metrics.totalActivities > 0 ? metrics.totalActivities : null,
+      section: 'productivity'
+    },
+    { 
+      id: 'courses', 
+      label: 'Courses', 
+      icon: BookOpen,
+      badge: null,
+      section: 'learning'
+    },
+    { 
+      id: 'problems', 
+      label: 'Problems', 
+      icon: Code,
+      badge: null,
+      section: 'learning'
+    },
+    { 
+      id: 'leaderboard', 
+      label: 'Leaderboard', 
+      icon: Trophy,
+      badge: null,
+      section: 'learning'
+    },
+    { 
+      id: 'rewards', 
+      label: 'Rewards', 
+      icon: Gift,
+      badge: null,
+      section: 'learning'
     },
   ]
+
+  // Add admin section if user is admin
+  if (isAdmin) {
+    sidebarItems.push({
+      id: 'admin',
+      label: 'Admin Panel',
+      icon: Shield,
+      badge: null,
+      section: 'admin'
+    })
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -106,6 +177,16 @@ const Dashboard: React.FC = () => {
         return <AnalyticsChart />
       case 'activity':
         return <ActivityFeed />
+      case 'courses':
+        return <CoursesManager />
+      case 'problems':
+        return <ProblemsManager />
+      case 'leaderboard':
+        return <LeaderboardView />
+      case 'rewards':
+        return <RewardsManager />
+      case 'admin':
+        return isAdmin ? <AdminPanel /> : <div className="text-center text-slate-400">Access Denied</div>
       default:
         return <DashboardStats />
     }
@@ -123,6 +204,16 @@ const Dashboard: React.FC = () => {
         return 'Analytics & Reports'
       case 'activity':
         return `Activity Feed (${metrics.totalActivities})`
+      case 'courses':
+        return 'Learning Courses'
+      case 'problems':
+        return 'Coding Problems'
+      case 'leaderboard':
+        return 'Leaderboard'
+      case 'rewards':
+        return 'Rewards & Achievements'
+      case 'admin':
+        return 'Admin Panel'
       default:
         return 'Dashboard'
     }
@@ -140,10 +231,38 @@ const Dashboard: React.FC = () => {
         return `Insights and analytics. ${metrics.completionRate}% completion rate.`
       case 'activity':
         return `Recent activity feed. Stay updated with all your actions.`
+      case 'courses':
+        return 'Learn Java, Python, DSA and more with interactive courses.'
+      case 'problems':
+        return 'Solve coding problems and improve your programming skills.'
+      case 'leaderboard':
+        return 'See how you rank against other learners.'
+      case 'rewards':
+        return 'Earn points, badges, and unlock achievements.'
+      case 'admin':
+        return 'Manage users, courses, problems, and platform settings.'
       default:
-        return 'Manage your productivity'
+        return 'Manage your productivity and learning'
     }
   }
+
+  const getSectionTitle = (section: string) => {
+    switch (section) {
+      case 'main': return null
+      case 'productivity': return 'Productivity'
+      case 'learning': return 'Learning'
+      case 'admin': return 'Administration'
+      default: return null
+    }
+  }
+
+  const groupedItems = sidebarItems.reduce((acc, item) => {
+    if (!acc[item.section]) {
+      acc[item.section] = []
+    }
+    acc[item.section].push(item)
+    return acc
+  }, {} as Record<string, typeof sidebarItems>)
 
   if (!currentUser) {
     return null
@@ -215,6 +334,12 @@ const Dashboard: React.FC = () => {
                 <p className="text-xs text-slate-400 truncate">
                   {currentUser.email}
                 </p>
+                {isAdmin && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-orange-500/20 text-orange-400 rounded-full mt-1">
+                    <Shield className="w-3 h-3" />
+                    Admin
+                  </span>
+                )}
               </div>
             </div>
             
@@ -234,37 +359,46 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4">
-            <ul className="space-y-2">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id as ActiveTab)
-                        setSidebarOpen(false)
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
-                        activeTab === item.id
-                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                          : 'text-slate-300 hover:bg-slate-700/50 hover:text-slate-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5" />
-                        {item.label}
-                      </div>
-                      {item.badge && (
-                        <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                          {item.badge > 99 ? '99+' : item.badge}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
+          <nav className="flex-1 p-4 overflow-y-auto">
+            {Object.entries(groupedItems).map(([section, items]) => (
+              <div key={section} className="mb-6">
+                {getSectionTitle(section) && (
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-2">
+                    {getSectionTitle(section)}
+                  </h3>
+                )}
+                <ul className="space-y-2">
+                  {items.map((item) => {
+                    const Icon = item.icon
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => {
+                            setActiveTab(item.id as ActiveTab)
+                            setSidebarOpen(false)
+                          }}
+                          className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
+                            activeTab === item.id
+                              ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                              : 'text-slate-300 hover:bg-slate-700/50 hover:text-slate-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Icon className="w-5 h-5" />
+                            {item.label}
+                          </div>
+                          {item.badge && (
+                            <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                              {item.badge > 99 ? '99+' : item.badge}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+            ))}
           </nav>
 
           {/* Bottom Actions */}
@@ -309,7 +443,7 @@ const Dashboard: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search tasks, notes..."
+                  placeholder="Search tasks, notes, courses..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-64"

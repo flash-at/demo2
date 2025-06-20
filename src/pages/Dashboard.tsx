@@ -11,11 +11,13 @@ import {
   Bell,
   Search,
   Menu,
-  X
+  X,
+  Home,
+  TrendingUp
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
-import { useSupabaseAuth } from '../hooks/useSupabase'
+import { useSupabaseAuth, useAnalyticsData } from '../hooks/useSupabase'
 import DashboardStats from '../components/dashboard/DashboardStats'
 import TaskManager from '../components/dashboard/TaskManager'
 import NotesManager from '../components/dashboard/NotesManager'
@@ -33,8 +35,9 @@ const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Initialize Supabase auth
+  // Initialize Supabase auth and get real-time data
   useSupabaseAuth()
+  const { metrics, loading: metricsLoading } = useAnalyticsData(currentUser?.uid)
 
   const handleLogout = async () => {
     try {
@@ -47,11 +50,36 @@ const Dashboard: React.FC = () => {
   }
 
   const sidebarItems = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-    { id: 'notes', label: 'Notes', icon: FileText },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'activity', label: 'Activity', icon: Activity },
+    { 
+      id: 'overview', 
+      label: 'Overview', 
+      icon: Home,
+      badge: null
+    },
+    { 
+      id: 'tasks', 
+      label: 'Tasks', 
+      icon: CheckSquare,
+      badge: metrics.pendingTasks > 0 ? metrics.pendingTasks : null
+    },
+    { 
+      id: 'notes', 
+      label: 'Notes', 
+      icon: FileText,
+      badge: metrics.totalNotes > 0 ? metrics.totalNotes : null
+    },
+    { 
+      id: 'analytics', 
+      label: 'Analytics', 
+      icon: TrendingUp,
+      badge: null
+    },
+    { 
+      id: 'activity', 
+      label: 'Activity', 
+      icon: Activity,
+      badge: metrics.totalActivities > 0 ? metrics.totalActivities : null
+    },
   ]
 
   const renderContent = () => {
@@ -80,6 +108,40 @@ const Dashboard: React.FC = () => {
         return <ActivityFeed />
       default:
         return <DashboardStats />
+    }
+  }
+
+  const getPageTitle = () => {
+    switch (activeTab) {
+      case 'overview':
+        return 'Dashboard Overview'
+      case 'tasks':
+        return `Tasks (${metrics.totalTasks})`
+      case 'notes':
+        return `Notes (${metrics.totalNotes})`
+      case 'analytics':
+        return 'Analytics & Reports'
+      case 'activity':
+        return `Activity Feed (${metrics.totalActivities})`
+      default:
+        return 'Dashboard'
+    }
+  }
+
+  const getPageDescription = () => {
+    switch (activeTab) {
+      case 'overview':
+        return `Welcome back, ${currentUser?.displayName || 'User'}! Here's your productivity overview.`
+      case 'tasks':
+        return `Manage your tasks. ${metrics.completedTasks} completed, ${metrics.pendingTasks} pending.`
+      case 'notes':
+        return `Your notes collection. ${metrics.favoriteNotes} favorites out of ${metrics.totalNotes} total.`
+      case 'analytics':
+        return `Insights and analytics. ${metrics.completionRate}% completion rate.`
+      case 'activity':
+        return `Recent activity feed. Stay updated with all your actions.`
+      default:
+        return 'Manage your productivity'
     }
   }
 
@@ -155,6 +217,20 @@ const Dashboard: React.FC = () => {
                 </p>
               </div>
             </div>
+            
+            {/* Quick Stats */}
+            {!metricsLoading && (
+              <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-slate-700/30 rounded p-2 text-center">
+                  <div className="text-green-400 font-bold">{metrics.completedTasks}</div>
+                  <div className="text-slate-400">Completed</div>
+                </div>
+                <div className="bg-slate-700/30 rounded p-2 text-center">
+                  <div className="text-orange-400 font-bold">{metrics.completionRate}%</div>
+                  <div className="text-slate-400">Success Rate</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -169,14 +245,21 @@ const Dashboard: React.FC = () => {
                         setActiveTab(item.id as ActiveTab)
                         setSidebarOpen(false)
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                         activeTab === item.id
                           ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                           : 'text-slate-300 hover:bg-slate-700/50 hover:text-slate-100'
                       }`}
                     >
-                      <Icon className="w-5 h-5" />
-                      {item.label}
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-5 h-5" />
+                        {item.label}
+                      </div>
+                      {item.badge && (
+                        <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
                     </button>
                   </li>
                 )
@@ -211,11 +294,11 @@ const Dashboard: React.FC = () => {
               </button>
               
               <div>
-                <h2 className="text-xl font-semibold text-slate-100 capitalize">
-                  {activeTab === 'overview' ? 'Dashboard Overview' : activeTab}
+                <h2 className="text-xl font-semibold text-slate-100">
+                  {getPageTitle()}
                 </h2>
                 <p className="text-sm text-slate-400">
-                  Welcome back, {currentUser.displayName || 'User'}!
+                  {getPageDescription()}
                 </p>
               </div>
             </div>
@@ -226,7 +309,7 @@ const Dashboard: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search tasks, notes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-64"
@@ -236,7 +319,11 @@ const Dashboard: React.FC = () => {
               {/* Notifications */}
               <button className="relative p-2 text-slate-400 hover:text-slate-200 transition-colors">
                 <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full"></span>
+                {metrics.highPriorityTasks > 0 && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white font-bold">{metrics.highPriorityTasks}</span>
+                  </span>
+                )}
               </button>
 
               {/* Settings */}

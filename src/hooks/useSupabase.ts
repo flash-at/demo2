@@ -67,7 +67,8 @@ export function useRealTimeSubscription<T>(
         setError(null)
       } catch (err: any) {
         setError(err.message)
-        toast.error(`Error fetching ${table}: ${err.message}`)
+        console.error(`Error fetching ${table}:`, err)
+        toast.error(`Error loading ${table}: ${err.message}`)
       } finally {
         setLoading(false)
       }
@@ -157,4 +158,27 @@ export function useSupabaseQuery<T>(
   }, [table, select, JSON.stringify(filter)])
 
   return { data, loading, error }
+}
+
+// Hook for real-time analytics data
+export function useAnalyticsData(userId?: string) {
+  const { data: tasks, loading: tasksLoading } = useRealTimeSubscription<any>('tasks', undefined, userId)
+  const { data: notes, loading: notesLoading } = useRealTimeSubscription<any>('notes', undefined, userId)
+  const { data: activities, loading: activitiesLoading } = useRealTimeSubscription<any>('activities', undefined, userId)
+
+  const loading = tasksLoading || notesLoading || activitiesLoading
+
+  // Calculate real-time metrics
+  const metrics = {
+    totalTasks: tasks.length,
+    completedTasks: tasks.filter((task: any) => task.status === 'completed').length,
+    pendingTasks: tasks.filter((task: any) => task.status !== 'completed').length,
+    totalNotes: notes.length,
+    favoriteNotes: notes.filter((note: any) => note.is_favorite).length,
+    totalActivities: activities.length,
+    highPriorityTasks: tasks.filter((task: any) => task.priority === 'high' && task.status !== 'completed').length,
+    completionRate: tasks.length > 0 ? Math.round((tasks.filter((task: any) => task.status === 'completed').length / tasks.length) * 100) : 0
+  }
+
+  return { tasks, notes, activities, metrics, loading }
 }

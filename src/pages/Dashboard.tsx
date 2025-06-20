@@ -163,27 +163,27 @@ const Dashboard: React.FC = () => {
   }
 
   const renderOverview = () => (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-orange-500/20 via-red-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl p-8 border border-orange-500/30">
+      <div className="bg-gradient-to-r from-orange-500/20 via-red-500/20 to-pink-500/20 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-8 border border-orange-500/30">
         <div className="flex flex-col lg:flex-row items-center justify-between">
           <div className="text-center lg:text-left mb-6 lg:mb-0">
-            <h1 className="text-3xl lg:text-4xl font-bold text-slate-100 mb-2">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-100 mb-2">
               Welcome back, {currentUser?.displayName?.split(' ')[0] || 'User'}! 👋
             </h1>
-            <p className="text-lg text-slate-300 mb-4">
+            <p className="text-base md:text-lg text-slate-300 mb-4">
               Ready to continue your coding journey?
             </p>
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-              <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full">
+            <div className="flex flex-wrap gap-2 md:gap-4 justify-center lg:justify-start">
+              <div className="flex items-center gap-2 bg-slate-800/50 px-3 md:px-4 py-2 rounded-full">
                 <Zap className="w-4 h-4 text-yellow-400" />
                 <span className="text-sm text-slate-300">Level {Math.floor(metrics.totalScore / 100) + 1}</span>
               </div>
-              <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 bg-slate-800/50 px-3 md:px-4 py-2 rounded-full">
                 <Star className="w-4 h-4 text-orange-400" />
                 <span className="text-sm text-slate-300">{metrics.totalScore} Points</span>
               </div>
-              <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-2 bg-slate-800/50 px-3 md:px-4 py-2 rounded-full">
                 <Target className="w-4 h-4 text-green-400" />
                 <span className="text-sm text-slate-300">{metrics.completionRate}% Success</span>
               </div>
@@ -191,60 +191,60 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="relative">
-            <div className="w-32 h-32 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
               {currentUser?.photoURL ? (
                 <img 
                   src={currentUser.photoURL} 
                   alt="Profile" 
-                  className="w-28 h-28 rounded-full border-4 border-white/20"
+                  className="w-20 h-20 md:w-28 md:h-28 rounded-full border-4 border-white/20"
                 />
               ) : (
-                <User className="w-16 h-16 text-white" />
+                <User className="w-12 h-12 md:w-16 md:h-16 text-white" />
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center border-4 border-slate-900">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 md:w-10 md:h-10 bg-green-500 rounded-full flex items-center justify-center border-4 border-slate-900">
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <button
           onClick={() => setActiveTab('tasks')}
-          className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
+          className="bg-slate-800/50 backdrop-blur-sm rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
         >
-          <CheckSquare className="w-8 h-8 text-orange-400 mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-slate-100 mb-1">Quick Task</h3>
-          <p className="text-sm text-slate-400">Add new task</p>
+          <CheckSquare className="w-6 h-6 md:w-8 md:h-8 text-orange-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+          <h3 className="font-semibold text-slate-100 mb-1 text-sm md:text-base">Quick Task</h3>
+          <p className="text-xs md:text-sm text-slate-400">Add new task</p>
         </button>
         
         <button
           onClick={() => setActiveTab('notes')}
-          className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
+          className="bg-slate-800/50 backdrop-blur-sm rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
         >
-          <FileText className="w-8 h-8 text-purple-400 mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-slate-100 mb-1">Quick Note</h3>
-          <p className="text-sm text-slate-400">Jot down ideas</p>
+          <FileText className="w-6 h-6 md:w-8 md:h-8 text-purple-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+          <h3 className="font-semibold text-slate-100 mb-1 text-sm md:text-base">Quick Note</h3>
+          <p className="text-xs md:text-sm text-slate-400">Jot down ideas</p>
         </button>
         
         <button
           onClick={() => setActiveTab('problems')}
-          className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
+          className="bg-slate-800/50 backdrop-blur-sm rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
         >
-          <Code className="w-8 h-8 text-green-400 mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-slate-100 mb-1">Solve Problem</h3>
-          <p className="text-sm text-slate-400">Practice coding</p>
+          <Code className="w-6 h-6 md:w-8 md:h-8 text-green-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+          <h3 className="font-semibold text-slate-100 mb-1 text-sm md:text-base">Solve Problem</h3>
+          <p className="text-xs md:text-sm text-slate-400">Practice coding</p>
         </button>
         
         <button
           onClick={() => setActiveTab('courses')}
-          className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
+          className="bg-slate-800/50 backdrop-blur-sm rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
         >
-          <BookOpen className="w-8 h-8 text-blue-400 mb-3 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-slate-100 mb-1">Learn</h3>
-          <p className="text-sm text-slate-400">Take courses</p>
+          <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-blue-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+          <h3 className="font-semibold text-slate-100 mb-1 text-sm md:text-base">Learn</h3>
+          <p className="text-xs md:text-sm text-slate-400">Take courses</p>
         </button>
       </div>
 
@@ -252,12 +252,12 @@ const Dashboard: React.FC = () => {
       <DashboardStats />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
+        <div className="xl:col-span-2 space-y-6 md:space-y-8">
           {/* Recent Tasks */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-100">Recent Tasks</h3>
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-slate-700/50">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h3 className="text-base md:text-lg font-semibold text-slate-100">Recent Tasks</h3>
               <button
                 onClick={() => setActiveTab('tasks')}
                 className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
@@ -269,24 +269,24 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Progress Chart */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-            <h3 className="text-lg font-semibold text-slate-100 mb-6">Weekly Progress</h3>
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-slate-700/50">
+            <h3 className="text-base md:text-lg font-semibold text-slate-100 mb-4 md:mb-6">Weekly Progress</h3>
             <AnalyticsChart />
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Activity Feed */}
           <ActivityFeed />
 
           {/* Quick Stats */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-            <h3 className="text-lg font-semibold text-slate-100 mb-4">Today's Goals</h3>
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-slate-700/50">
+            <h3 className="text-base md:text-lg font-semibold text-slate-100 mb-4">Today's Goals</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Complete 3 tasks</span>
+                <span className="text-sm md:text-base text-slate-300">Complete 3 tasks</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-16 bg-slate-700 rounded-full h-2">
+                  <div className="w-12 md:w-16 bg-slate-700 rounded-full h-2">
                     <div className="bg-green-400 h-2 rounded-full" style={{ width: `${Math.min((metrics.completedTasks / 3) * 100, 100)}%` }}></div>
                   </div>
                   <span className="text-xs text-slate-400">{Math.min(metrics.completedTasks, 3)}/3</span>
@@ -294,9 +294,9 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Write 2 notes</span>
+                <span className="text-sm md:text-base text-slate-300">Write 2 notes</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-16 bg-slate-700 rounded-full h-2">
+                  <div className="w-12 md:w-16 bg-slate-700 rounded-full h-2">
                     <div className="bg-purple-400 h-2 rounded-full" style={{ width: `${Math.min((metrics.totalNotes / 2) * 100, 100)}%` }}></div>
                   </div>
                   <span className="text-xs text-slate-400">{Math.min(metrics.totalNotes, 2)}/2</span>
@@ -304,9 +304,9 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <span className="text-slate-300">Solve 1 problem</span>
+                <span className="text-sm md:text-base text-slate-300">Solve 1 problem</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-16 bg-slate-700 rounded-full h-2">
+                  <div className="w-12 md:w-16 bg-slate-700 rounded-full h-2">
                     <div className="bg-orange-400 h-2 rounded-full" style={{ width: '0%' }}></div>
                   </div>
                   <span className="text-xs text-slate-400">0/1</span>
@@ -316,9 +316,9 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Achievements Preview */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-slate-700/50">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-100">Recent Achievements</h3>
+              <h3 className="text-base md:text-lg font-semibold text-slate-100">Recent Achievements</h3>
               <button
                 onClick={() => setActiveTab('rewards')}
                 className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
@@ -328,8 +328,8 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-green-400" />
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+                  <Trophy className="w-4 h-4 md:w-5 md:h-5 text-green-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-100">First Task Completed</p>
@@ -338,8 +338,8 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                  <Star className="w-5 h-5 text-purple-400" />
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <Star className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-100">Note Taker</p>
@@ -484,7 +484,7 @@ const Dashboard: React.FC = () => {
       }`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+          <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700/50">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-white" />
@@ -495,14 +495,14 @@ const Dashboard: React.FC = () => {
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-slate-400 hover:text-slate-200 transition-colors"
+              className="lg:hidden p-2 text-slate-400 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-700/50"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* User Profile */}
-          <div className="p-6 border-b border-slate-700/50">
+          <div className="p-4 md:p-6 border-b border-slate-700/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
                 {currentUser.photoURL ? (
@@ -606,42 +606,42 @@ const Dashboard: React.FC = () => {
       <div className="lg:ml-64">
         {/* Top Header */}
         <header className="bg-slate-800/50 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-30">
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-4 md:px-6 py-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-slate-400 hover:text-slate-200 transition-colors"
+                className="lg:hidden p-2 text-slate-400 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-700/50"
               >
                 <Menu className="w-5 h-5" />
               </button>
               
-              <div>
-                <h2 className="text-xl font-semibold text-slate-100">
+              <div className="min-w-0">
+                <h2 className="text-lg md:text-xl font-semibold text-slate-100 truncate">
                   {getPageTitle()}
                 </h2>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-400 hidden sm:block">
                   {getPageDescription()}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* Search */}
-              <div className="relative hidden sm:block">
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Search - Hidden on small screens */}
+              <div className="relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search tasks, notes, courses..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-64"
+                  className="pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-48 lg:w-64"
                 />
               </div>
 
               {/* Notifications */}
               <button 
                 onClick={() => setShowNotifications(true)}
-                className="relative p-2 text-slate-400 hover:text-slate-200 transition-colors"
+                className="relative p-2 md:p-3 text-slate-400 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-700/50"
               >
                 <Bell className="w-5 h-5" />
                 {unreadNotifications > 0 && (
@@ -654,7 +654,7 @@ const Dashboard: React.FC = () => {
               {/* Settings */}
               <button 
                 onClick={() => setShowSettings(true)}
-                className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+                className="p-2 md:p-3 text-slate-400 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-700/50"
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -663,10 +663,10 @@ const Dashboard: React.FC = () => {
               {!isAdmin && (
                 <button
                   onClick={() => navigate('/admin-login')}
-                  className="flex items-center gap-2 px-3 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
                 >
                   <Shield className="w-4 h-4" />
-                  Admin
+                  <span className="hidden md:inline">Admin</span>
                 </button>
               )}
             </div>
@@ -674,7 +674,7 @@ const Dashboard: React.FC = () => {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-4 md:p-6">
           {renderContent()}
         </main>
       </div>

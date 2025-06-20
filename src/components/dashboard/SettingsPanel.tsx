@@ -499,7 +499,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
             <Settings className="w-6 h-6 text-orange-400" />
             <h2 className="text-xl font-semibold text-slate-100">Settings</h2>
@@ -512,17 +512,17 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="flex h-[calc(90vh-120px)]">
+        <div className="flex flex-col md:flex-row h-[calc(90vh-120px)]">
           {/* Sidebar */}
-          <div className="w-64 border-r border-slate-700/50 p-4 bg-slate-800/30">
-            <nav className="space-y-2">
+          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-700/50 p-4 bg-slate-800/30 overflow-x-auto md:overflow-x-visible">
+            <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:scale-105 ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:scale-105 whitespace-nowrap md:w-full ${
                       activeTab === tab.id
                         ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/10'
                         : 'text-slate-300 hover:bg-slate-700/50 hover:text-slate-100 border border-transparent'
@@ -538,27 +538,27 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               {renderContent()}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-slate-700/50 bg-slate-800/50">
-          <p className="text-sm text-slate-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 md:p-6 border-t border-slate-700/50 bg-slate-800/50 gap-4">
+          <p className="text-sm text-slate-400 text-center sm:text-left">
             Changes are saved automatically
           </p>
-          <div className="flex gap-3">
+          <div className="flex gap-3 w-full sm:w-auto">
             <button
               onClick={onClose}
-              className="px-6 py-2 text-slate-300 hover:text-slate-100 transition-colors rounded-lg hover:bg-slate-700/50 border border-slate-600/30"
+              className="flex-1 sm:flex-none px-6 py-2 text-slate-300 hover:text-slate-100 transition-colors rounded-lg hover:bg-slate-700/50 border border-slate-600/30"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-6 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-all duration-200 hover:scale-105 shadow-lg shadow-orange-500/10"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-all duration-200 hover:scale-105 shadow-lg shadow-orange-500/10"
             >
               <Save className="w-4 h-4" />
               Save Changes

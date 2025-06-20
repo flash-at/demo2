@@ -182,10 +182,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-16">
-      <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-4 md:pt-16 p-4">
+      <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-md max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700/50">
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
             <Bell className="w-6 h-6 text-orange-400" />
             <h2 className="text-xl font-semibold text-slate-100">Notifications</h2>
@@ -197,7 +197,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-700/50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -216,7 +216,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
         )}
 
         {/* Notifications List */}
-        <div className="overflow-y-auto max-h-96">
+        <div className="overflow-y-auto max-h-[60vh] md:max-h-96">
           {notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="w-12 h-12 mx-auto mb-4 text-slate-400 opacity-50" />

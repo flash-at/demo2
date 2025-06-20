@@ -32,6 +32,17 @@ export function useSupabaseAuth() {
   }, [currentUser])
 }
 
+// Helper function to get the correct timestamp column for ordering
+function getOrderColumn(table: string): string {
+  const orderColumns: Record<string, string> = {
+    'submissions': 'submitted_at',
+    'achievements': 'earned_at',
+    'leaderboard': 'last_updated',
+  }
+  
+  return orderColumns[table] || 'created_at'
+}
+
 export function useRealTimeSubscription<T>(
   table: string,
   filter?: string,
@@ -59,7 +70,8 @@ export function useRealTimeSubscription<T>(
           query = query.filter(column, operator, value)
         }
 
-        const { data: initialData, error } = await query.order('created_at', { ascending: false })
+        const orderColumn = getOrderColumn(table)
+        const { data: initialData, error } = await query.order(orderColumn, { ascending: false })
         
         if (error) throw error
         

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Gift, Star, Trophy, Award, Crown, Target, Zap, Calendar, DollarSign, CreditCard, Banknote, Wallet, Bitcoin } from 'lucide-react'
+import { Gift, Star, Trophy, Award, Crown, Target, Zap, Calendar, DollarSign, CreditCard, Banknote, Wallet } from 'lucide-react'
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
 import { Reward, Achievement, RedemptionRequest, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -133,7 +133,7 @@ const RewardsManager: React.FC = () => {
       case 'gift_voucher': return <Gift className="w-5 h-5 text-purple-400" />
       case 'paypal': return <Wallet className="w-5 h-5 text-blue-400" />
       case 'bank_transfer': return <CreditCard className="w-5 h-5 text-orange-400" />
-      case 'crypto': return <Bitcoin className="w-5 h-5 text-yellow-400" />
+      case 'crypto': return <DollarSign className="w-5 h-5 text-yellow-400" />
       default: return <Banknote className="w-5 h-5 text-slate-400" />
     }
   }

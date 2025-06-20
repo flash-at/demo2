@@ -8,7 +8,7 @@ export function useSupabaseAuth() {
   
   useEffect(() => {
     if (currentUser) {
-      // Get Firebase ID token and set Supabase auth session
+      // Setup Supabase authentication with Firebase token
       setupSupabaseAuth(currentUser)
     }
   }, [currentUser])
@@ -20,16 +20,25 @@ async function setupSupabaseAuth(currentUser: any) {
     // Get the Firebase ID token (JWT)
     const idToken = await currentUser.getIdToken(true) // Force refresh
     
-    // Use signInWithIdToken to properly exchange Firebase token for Supabase session
-    const { data, error: sessionError } = await supabase.auth.signInWithIdToken({
-      provider: 'firebase',
-      token: idToken,
-      options: {
-        data: {
+    // Create a custom session for Supabase
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: idToken,
+      refresh_token: idToken,
+      expires_in: 3600,
+      expires_at: Date.now() + 3600000,
+      token_type: 'bearer',
+      user: {
+        id: currentUser.uid,
+        email: currentUser.email || '',
+        user_metadata: {
           full_name: currentUser.displayName || '',
           avatar_url: currentUser.photoURL || '',
           email: currentUser.email || '',
-        }
+        },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: currentUser.metadata.creationTime || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
     })
 
@@ -38,7 +47,7 @@ async function setupSupabaseAuth(currentUser: any) {
       return
     }
 
-    console.log('Successfully authenticated with Supabase:', data.user?.id)
+    console.log('Successfully authenticated with Supabase:', currentUser.uid)
 
     // Create user_extended record if it doesn't exist
     await createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')

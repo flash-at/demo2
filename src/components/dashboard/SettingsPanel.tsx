@@ -135,7 +135,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
               type="text"
               value={settings.profile.displayName}
               onChange={(e) => updateSettings('profile', 'displayName', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
             />
           </div>
           
@@ -145,7 +145,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
               type="email"
               value={settings.profile.email}
               disabled
-              className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-400 cursor-not-allowed"
+              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-400 cursor-not-allowed"
             />
             <p className="text-xs text-slate-500 mt-1">Email cannot be changed from settings</p>
           </div>
@@ -155,7 +155,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             <textarea
               value={settings.profile.bio}
               onChange={(e) => updateSettings('profile', 'bio', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               rows={3}
               placeholder="Tell us about yourself..."
             />
@@ -168,7 +168,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 type="text"
                 value={settings.profile.location}
                 onChange={(e) => updateSettings('profile', 'location', e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 placeholder="City, Country"
               />
             </div>
@@ -179,7 +179,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 type="url"
                 value={settings.profile.website}
                 onChange={(e) => updateSettings('profile', 'website', e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 placeholder="https://yourwebsite.com"
               />
             </div>
@@ -195,7 +195,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
         <h3 className="text-lg font-semibold text-slate-100 mb-4">Notification Preferences</h3>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-blue-400" />
               <div>
@@ -210,11 +210,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('notifications', 'emailNotifications', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div className="flex items-center gap-3">
               <Smartphone className="w-5 h-5 text-green-400" />
               <div>
@@ -229,11 +229,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('notifications', 'pushNotifications', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div className="flex items-center gap-3">
               <Bell className="w-5 h-5 text-yellow-400" />
               <div>
@@ -248,11 +248,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('notifications', 'taskReminders', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div className="flex items-center gap-3">
               {settings.notifications.soundEnabled ? 
                 <Volume2 className="w-5 h-5 text-purple-400" /> : 
@@ -270,7 +270,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('notifications', 'soundEnabled', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
         </div>
@@ -285,7 +285,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Theme</label>
+            <label className="block text-sm font-medium text-slate-300 mb-3">Theme</label>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { value: 'dark', label: 'Dark', icon: Moon },
@@ -295,14 +295,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 <button
                   key={value}
                   onClick={() => updateSettings('appearance', 'theme', value)}
-                  className={`flex items-center gap-2 p-3 rounded-lg border transition-colors ${
+                  className={`flex items-center justify-center gap-2 p-4 rounded-lg border transition-all duration-200 hover:scale-105 ${
                     settings.appearance.theme === value
-                      ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
-                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-700/50'
+                      ? 'bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-lg shadow-orange-500/20'
+                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500/50'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {label}
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{label}</span>
                 </button>
               ))}
             </div>
@@ -313,7 +313,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             <select
               value={settings.appearance.language}
               onChange={(e) => updateSettings('appearance', 'language', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
             >
               <option value="en">English</option>
               <option value="es">Español</option>
@@ -328,7 +328,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             <select
               value={settings.appearance.timezone}
               onChange={(e) => updateSettings('appearance', 'timezone', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
             >
               <option value="UTC">UTC</option>
               <option value="America/New_York">Eastern Time</option>
@@ -338,7 +338,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             </select>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div>
               <p className="text-slate-100 font-medium">Compact Mode</p>
               <p className="text-sm text-slate-400">Use smaller spacing and elements</p>
@@ -350,7 +350,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('appearance', 'compactMode', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
         </div>
@@ -365,7 +365,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Profile Visibility</label>
+            <label className="block text-sm font-medium text-slate-300 mb-3">Profile Visibility</label>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { value: 'public', label: 'Public', icon: Globe },
@@ -374,21 +374,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 <button
                   key={value}
                   onClick={() => updateSettings('privacy', 'profileVisibility', value)}
-                  className={`flex items-center gap-2 p-3 rounded-lg border transition-colors ${
+                  className={`flex items-center justify-center gap-2 p-4 rounded-lg border transition-all duration-200 hover:scale-105 ${
                     settings.privacy.profileVisibility === value
-                      ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
-                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-700/50'
+                      ? 'bg-orange-500/20 border-orange-500/50 text-orange-400 shadow-lg shadow-orange-500/20'
+                      : 'bg-slate-700/30 border-slate-600/30 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500/50'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {label}
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{label}</span>
                 </button>
               ))}
             </div>
           </div>
           
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
               <div>
                 <p className="text-slate-100 font-medium">Show Activity</p>
                 <p className="text-sm text-slate-400">Let others see your recent activity</p>
@@ -400,11 +400,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                   onChange={(e) => updateSettings('privacy', 'showActivity', e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
               </label>
             </div>
             
-            <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
               <div>
                 <p className="text-slate-100 font-medium">Show Achievements</p>
                 <p className="text-sm text-slate-400">Display your achievements publicly</p>
@@ -416,7 +416,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                   onChange={(e) => updateSettings('privacy', 'showAchievements', e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
               </label>
             </div>
           </div>
@@ -431,7 +431,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
         <h3 className="text-lg font-semibold text-slate-100 mb-4">Security Settings</h3>
         
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div>
               <p className="text-slate-100 font-medium">Two-Factor Authentication</p>
               <p className="text-sm text-slate-400">Add an extra layer of security</p>
@@ -443,7 +443,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('security', 'twoFactorEnabled', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
           
@@ -452,7 +452,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             <select
               value={settings.security.sessionTimeout}
               onChange={(e) => updateSettings('security', 'sessionTimeout', parseInt(e.target.value))}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
             >
               <option value={15}>15 minutes</option>
               <option value={30}>30 minutes</option>
@@ -462,7 +462,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             </select>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
             <div>
               <p className="text-slate-100 font-medium">Login Alerts</p>
               <p className="text-sm text-slate-400">Get notified of new login attempts</p>
@@ -474,7 +474,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                 onChange={(e) => updateSettings('security', 'loginAlerts', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+              <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
             </label>
           </div>
         </div>
@@ -506,7 +506,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-700/50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -514,7 +514,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
 
         <div className="flex h-[calc(90vh-120px)]">
           {/* Sidebar */}
-          <div className="w-64 border-r border-slate-700/50 p-4">
+          <div className="w-64 border-r border-slate-700/50 p-4 bg-slate-800/30">
             <nav className="space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -522,14 +522,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 hover:scale-105 ${
                       activeTab === tab.id
-                        ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                        : 'text-slate-300 hover:bg-slate-700/50'
+                        ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30 shadow-lg shadow-orange-500/10'
+                        : 'text-slate-300 hover:bg-slate-700/50 hover:text-slate-100 border border-transparent'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
-                    {tab.label}
+                    <span className="font-medium">{tab.label}</span>
                   </button>
                 )
               })}
@@ -552,13 +552,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-slate-300 hover:text-slate-100 transition-colors"
+              className="px-6 py-2 text-slate-300 hover:text-slate-100 transition-colors rounded-lg hover:bg-slate-700/50 border border-slate-600/30"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-all duration-200 hover:scale-105 shadow-lg shadow-orange-500/10"
             >
               <Save className="w-4 h-4" />
               Save Changes

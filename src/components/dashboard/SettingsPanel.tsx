@@ -497,9 +497,9 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700/50">
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700/50 flex-shrink-0">
           <div className="flex items-center gap-3">
             <Settings className="w-6 h-6 text-orange-400" />
             <h2 className="text-xl font-semibold text-slate-100">Settings</h2>
@@ -512,9 +512,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row h-[calc(90vh-120px)]">
+        {/* Main Content */}
+        <div className="flex flex-col md:flex-row flex-1 min-h-0">
           {/* Sidebar */}
-          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-700/50 p-4 bg-slate-800/30 overflow-x-auto md:overflow-x-visible">
+          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-700/50 p-4 bg-slate-800/30 overflow-x-auto md:overflow-x-visible flex-shrink-0">
             <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -537,32 +538,34 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <div className="p-4 md:p-6">
               {renderContent()}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex flex-col sm:flex-row items-center justify-between p-4 md:p-6 border-t border-slate-700/50 bg-slate-800/50 gap-4">
-          <p className="text-sm text-slate-400 text-center sm:text-left">
-            Changes are saved automatically
-          </p>
-          <div className="flex gap-3 w-full sm:w-auto">
-            <button
-              onClick={onClose}
-              className="flex-1 sm:flex-none px-6 py-2 text-slate-300 hover:text-slate-100 transition-colors rounded-lg hover:bg-slate-700/50 border border-slate-600/30"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-all duration-200 hover:scale-105 shadow-lg shadow-orange-500/10"
-            >
-              <Save className="w-4 h-4" />
-              Save Changes
-            </button>
+        {/* Footer - Fixed at bottom */}
+        <div className="border-t border-slate-700/50 bg-slate-800/50 p-4 md:p-6 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-400 text-center sm:text-left">
+              Changes are saved automatically
+            </p>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <button
+                onClick={onClose}
+                className="flex-1 sm:flex-none px-6 py-3 text-slate-300 hover:text-slate-100 transition-colors rounded-lg hover:bg-slate-700/50 border border-slate-600/30 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-all duration-200 hover:scale-105 shadow-lg shadow-orange-500/10 font-medium"
+              >
+                <Save className="w-4 h-4" />
+                Save Changes
+              </button>
+            </div>
           </div>
         </div>
       </div>

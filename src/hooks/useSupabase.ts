@@ -8,41 +8,60 @@ export function useSupabaseAuth() {
   
   useEffect(() => {
     if (currentUser) {
-      // Set Supabase auth session when Firebase user is available
-      supabase.auth.setSession({
-        access_token: currentUser.uid,
-        refresh_token: currentUser.uid,
-        expires_in: 3600,
-        expires_at: Date.now() + 3600000,
-        token_type: 'bearer',
-        user: {
-          id: currentUser.uid,
-          email: currentUser.email || '',
-          user_metadata: {
-            full_name: currentUser.displayName || '',
-            avatar_url: currentUser.photoURL || '',
-          },
-          app_metadata: {},
-          aud: 'authenticated',
-          created_at: currentUser.metadata.creationTime || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-      })
-
-      // Create user_extended record if it doesn't exist
-      createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')
+      // Get Firebase ID token and set Supabase auth session
+      setupSupabaseAuth(currentUser)
     }
   }, [currentUser])
+}
+
+// Helper function to setup Supabase authentication with Firebase token
+async function setupSupabaseAuth(currentUser: any) {
+  try {
+    // Get the Firebase ID token (JWT)
+    const idToken = await currentUser.getIdToken()
+    
+    // Set Supabase auth session with the Firebase JWT
+    await supabase.auth.setSession({
+      access_token: idToken,
+      refresh_token: idToken,
+      expires_in: 3600,
+      expires_at: Date.now() + 3600000,
+      token_type: 'bearer',
+      user: {
+        id: currentUser.uid,
+        email: currentUser.email || '',
+        user_metadata: {
+          full_name: currentUser.displayName || '',
+          avatar_url: currentUser.photoURL || '',
+        },
+        app_metadata: {},
+        aud: 'authenticated',
+        created_at: currentUser.metadata.creationTime || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+    })
+
+    // Create user_extended record if it doesn't exist
+    await createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')
+  } catch (error) {
+    console.error('Error setting up Supabase auth:', error)
+  }
 }
 
 // Helper function to create user_extended record
 async function createUserExtendedRecord(userId: string, email: string, displayName: string) {
   try {
-    const { data: existingUser } = await supabase
+    // Use maybeSingle() instead of single() to handle cases where no record exists
+    const { data: existingUser, error: selectError } = await supabase
       .from('users_extended')
       .select('id')
       .eq('user_id', userId)
-      .single()
+      .maybeSingle()
+
+    if (selectError) {
+      console.error('Error checking existing user:', selectError)
+      return
+    }
 
     if (!existingUser) {
       const { error } = await supabase

@@ -10,8 +10,7 @@ import {
   updateProfile,
   signInWithPopup,
   GoogleAuthProvider,
-  reload,
-  ActionCodeSettings
+  reload
 } from 'firebase/auth'
 import { auth } from '../config/firebase'
 
@@ -40,52 +39,6 @@ export function useAuth() {
 interface AuthProviderProps {
   children: ReactNode
 }
-
-// Simple rate limiting
-class RateLimiter {
-  private attempts: Map<string, { count: number; lastAttempt: number }> = new Map()
-  private readonly maxAttempts = 5
-  private readonly windowMs = 60000 // 1 minute
-
-  canAttempt(key: string): boolean {
-    const now = Date.now()
-    const record = this.attempts.get(key)
-
-    if (!record) {
-      this.attempts.set(key, { count: 1, lastAttempt: now })
-      return true
-    }
-
-    // Reset if window has passed
-    if (now - record.lastAttempt > this.windowMs) {
-      this.attempts.set(key, { count: 1, lastAttempt: now })
-      return true
-    }
-
-    // Check if under limit
-    if (record.count < this.maxAttempts) {
-      record.count++
-      record.lastAttempt = now
-      return true
-    }
-
-    return false
-  }
-
-  getRemainingTime(key: string): number {
-    const record = this.attempts.get(key)
-    if (!record) return 0
-    
-    const elapsed = Date.now() - record.lastAttempt
-    return Math.max(0, this.windowMs - elapsed)
-  }
-
-  reset(key: string): void {
-    this.attempts.delete(key)
-  }
-}
-
-const rateLimiter = new RateLimiter()
 
 // Enhanced error handling
 const handleAuthError = (error: any): Error => {
@@ -121,13 +74,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
 
   const signup = async (email: string, password: string, displayName: string) => {
-    const rateLimitKey = `signup_${email}`
-    
-    if (!rateLimiter.canAttempt(rateLimitKey)) {
-      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
-      throw new Error(`Too many signup attempts. Please wait ${remainingTime} seconds.`)
-    }
-
     try {
       // Create user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
@@ -138,16 +84,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
 
       // Send email verification
-      const actionCodeSettings: ActionCodeSettings = {
-        url: `${window.location.origin}/auth`,
-        handleCodeInApp: false
-      }
+      await sendEmailVerification(userCredential.user)
 
-      await sendEmailVerification(userCredential.user, actionCodeSettings)
-
-      // Reset rate limit on success
-      rateLimiter.reset(rateLimitKey)
-      
       return userCredential
     } catch (error: any) {
       throw handleAuthError(error)
@@ -155,13 +93,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const login = async (email: string, password: string) => {
-    const rateLimitKey = `login_${email}`
-    
-    if (!rateLimiter.canAttempt(rateLimitKey)) {
-      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
-      throw new Error(`Too many login attempts. Please wait ${remainingTime} seconds.`)
-    }
-
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       
@@ -179,8 +110,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('Please verify your email before signing in. Check your inbox for the verification email.')
       }
 
-      // Reset rate limit on success
-      rateLimiter.reset(rateLimitKey)
       return userCredential
     } catch (error: any) {
       throw handleAuthError(error)
@@ -196,36 +125,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const resetPassword = async (email: string) => {
-    const rateLimitKey = `reset_${email}`
-    
-    if (!rateLimiter.canAttempt(rateLimitKey)) {
-      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
-      throw new Error(`Too many reset attempts. Please wait ${remainingTime} seconds.`)
-    }
-
     try {
-      const actionCodeSettings: ActionCodeSettings = {
-        url: `${window.location.origin}/auth`,
-        handleCodeInApp: false
-      }
-
-      await sendPasswordResetEmail(auth, email, actionCodeSettings)
-
-      // Reset rate limit on success
-      rateLimiter.reset(rateLimitKey)
+      await sendPasswordResetEmail(auth, email)
     } catch (error: any) {
       throw handleAuthError(error)
     }
   }
 
   const loginWithGoogle = async () => {
-    const rateLimitKey = 'google_login'
-    
-    if (!rateLimiter.canAttempt(rateLimitKey)) {
-      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
-      throw new Error(`Too many Google sign-in attempts. Please wait ${remainingTime} seconds.`)
-    }
-
     try {
       const provider = new GoogleAuthProvider()
       provider.addScope('email')
@@ -236,9 +143,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
       
       const result = await signInWithPopup(auth, provider)
-
-      // Reset rate limit on success
-      rateLimiter.reset(rateLimitKey)
       return result
     } catch (error: any) {
       throw handleAuthError(error)
@@ -250,13 +154,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw new Error('No user is currently signed in.')
     }
 
-    const rateLimitKey = `verify_${currentUser.email}`
-    
-    if (!rateLimiter.canAttempt(rateLimitKey)) {
-      const remainingTime = Math.ceil(rateLimiter.getRemainingTime(rateLimitKey) / 1000)
-      throw new Error(`Too many verification attempts. Please wait ${remainingTime} seconds.`)
-    }
-
     try {
       // Refresh user data first
       await reload(currentUser)
@@ -266,15 +163,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('Email is already verified.')
       }
 
-      const actionCodeSettings: ActionCodeSettings = {
-        url: `${window.location.origin}/auth`,
-        handleCodeInApp: false
-      }
-
-      await sendEmailVerification(currentUser, actionCodeSettings)
-      
-      // Reset rate limit on success
-      rateLimiter.reset(rateLimitKey)
+      await sendEmailVerification(currentUser)
     } catch (error: any) {
       throw handleAuthError(error)
     }
@@ -285,7 +174,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     try {
       await reload(currentUser)
-      // Trigger a re-render by updating the state
+      // Force a re-render by updating the state
       setCurrentUser({ ...currentUser })
     } catch (error: any) {
       console.error('Error refreshing user:', error)

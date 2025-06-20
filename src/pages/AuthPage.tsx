@@ -59,7 +59,7 @@ const AuthPage: React.FC = () => {
       showToast('Password reset link clicked! You can now reset your password.', 'info', 6000)
       setActiveTab('reset')
     }
-  }, [searchParams, showToast])
+  }, [searchParams, showToast, currentUser, refreshUser])
 
   // Redirect if already authenticated and verified
   useEffect(() => {
@@ -119,7 +119,7 @@ const AuthPage: React.FC = () => {
     try {
       await signup(data.email, data.password, data.displayName)
       showToast(
-        'Account created successfully! Please check your email to verify your account.',
+        'Account created successfully! Please check your email to verify your account before signing in.',
         'success',
         8000
       )
@@ -231,6 +231,9 @@ const AuthPage: React.FC = () => {
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {loginForm.formState.errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{loginForm.formState.errors.email.message}</p>
+                )}
               </div>
 
               <div>
@@ -254,6 +257,9 @@ const AuthPage: React.FC = () => {
                     {showPassword.loginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {loginForm.formState.errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{loginForm.formState.errors.password.message}</p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
@@ -302,11 +308,20 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  {...signupForm.register('email', { required: 'Email is required' })}
+                  {...signupForm.register('email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Invalid email address'
+                    }
+                  })}
                   placeholder="you@example.com"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {signupForm.formState.errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.email.message}</p>
+                )}
               </div>
 
               <div>
@@ -315,11 +330,20 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  {...signupForm.register('displayName', { required: 'Display name is required' })}
+                  {...signupForm.register('displayName', { 
+                    required: 'Display name is required',
+                    minLength: {
+                      value: 2,
+                      message: 'Display name must be at least 2 characters'
+                    }
+                  })}
                   placeholder="Your display name"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {signupForm.formState.errors.displayName && (
+                  <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.displayName.message}</p>
+                )}
               </div>
 
               <div>
@@ -347,6 +371,9 @@ const AuthPage: React.FC = () => {
                     {showPassword.signupPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {signupForm.formState.errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.password.message}</p>
+                )}
                 <PasswordStrengthIndicator password={watchPassword} />
               </div>
 
@@ -371,6 +398,9 @@ const AuthPage: React.FC = () => {
                     {showPassword.confirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {signupForm.formState.errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.confirmPassword.message}</p>
+                )}
               </div>
 
               <div className="flex items-center">
@@ -391,6 +421,9 @@ const AuthPage: React.FC = () => {
                   </a>
                 </label>
               </div>
+              {signupForm.formState.errors.agreeTerms && (
+                <p className="mt-1 text-sm text-red-400">{signupForm.formState.errors.agreeTerms.message}</p>
+              )}
 
               <button
                 type="submit"
@@ -425,11 +458,20 @@ const AuthPage: React.FC = () => {
                 </label>
                 <input
                   type="email"
-                  {...resetForm.register('email', { required: 'Email is required' })}
+                  {...resetForm.register('email', { 
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Invalid email address'
+                    }
+                  })}
                   placeholder="Enter your registered email"
                   disabled={isLoading}
                   className="input-field block w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-sm placeholder-slate-400 text-slate-50 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {resetForm.formState.errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{resetForm.formState.errors.email.message}</p>
+                )}
               </div>
 
               <button

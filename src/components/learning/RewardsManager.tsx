@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Gift, Star, Trophy, Award, Crown, Target, Zap, Calendar, DollarSign, CreditCard, Banknote, Wallet } from 'lucide-react'
+import { Gift, Star, Trophy, Award, Crown, Target, Zap, Calendar, DollarSign, CreditCard, Banknote, Wallet, Bitcoin } from 'lucide-react'
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
 import { Reward, Achievement, RedemptionRequest, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -13,14 +13,16 @@ const RewardsManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'rewards' | 'achievements' | 'redeem'>('rewards')
   const [showRedeemForm, setShowRedeemForm] = useState(false)
   const [redemptionForm, setRedemptionForm] = useState({
-    type: 'cash' as 'cash' | 'gift_voucher' | 'paypal' | 'bank_transfer',
+    type: 'cash' as 'cash' | 'gift_voucher' | 'paypal' | 'bank_transfer' | 'crypto',
     points: 100,
     paymentDetails: {
       paypalEmail: '',
       bankAccount: '',
       accountHolder: '',
       routingNumber: '',
-      voucherType: 'amazon'
+      voucherType: 'amazon',
+      cryptoWallet: '',
+      cryptoType: 'bitcoin'
     }
   })
 
@@ -38,7 +40,8 @@ const RewardsManager: React.FC = () => {
     cash: 0.01, // 100 points = $1
     gift_voucher: 0.012, // 100 points = $1.20 in gift vouchers
     paypal: 0.01,
-    bank_transfer: 0.009 // 100 points = $0.90 (lower due to fees)
+    bank_transfer: 0.009, // 100 points = $0.90 (lower due to fees)
+    crypto: 0.011 // 100 points = $1.10 in crypto (higher due to volatility)
   }
 
   const handleRedemption = async (e: React.FormEvent) => {
@@ -92,7 +95,9 @@ const RewardsManager: React.FC = () => {
           bankAccount: '',
           accountHolder: '',
           routingNumber: '',
-          voucherType: 'amazon'
+          voucherType: 'amazon',
+          cryptoWallet: '',
+          cryptoType: 'bitcoin'
         }
       })
     } catch (error: any) {
@@ -128,6 +133,7 @@ const RewardsManager: React.FC = () => {
       case 'gift_voucher': return <Gift className="w-5 h-5 text-purple-400" />
       case 'paypal': return <Wallet className="w-5 h-5 text-blue-400" />
       case 'bank_transfer': return <CreditCard className="w-5 h-5 text-orange-400" />
+      case 'crypto': return <Bitcoin className="w-5 h-5 text-yellow-400" />
       default: return <Banknote className="w-5 h-5 text-slate-400" />
     }
   }
@@ -347,7 +353,7 @@ const RewardsManager: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-semibold text-slate-100">Redeem Points for Real Cash</h3>
-                <p className="text-slate-400">Convert your points to cash, gift vouchers, or PayPal payments</p>
+                <p className="text-slate-400">Convert your points to cash, gift vouchers, crypto, or PayPal payments</p>
               </div>
               <button
                 onClick={() => setShowRedeemForm(true)}
@@ -360,7 +366,7 @@ const RewardsManager: React.FC = () => {
             </div>
 
             {/* Redemption Rates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
               {Object.entries(redemptionRates).map(([type, rate]) => (
                 <div key={type} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30">
                   <div className="flex items-center gap-3 mb-2">
@@ -405,6 +411,7 @@ const RewardsManager: React.FC = () => {
                     >
                       <option value="cash">Cash (Bank Transfer)</option>
                       <option value="paypal">PayPal</option>
+                      <option value="crypto">Cryptocurrency</option>
                       <option value="gift_voucher">Gift Voucher</option>
                       <option value="bank_transfer">Direct Bank Transfer</option>
                     </select>
@@ -441,6 +448,41 @@ const RewardsManager: React.FC = () => {
                       className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
                       required
                     />
+                  </div>
+                )}
+
+                {redemptionForm.type === 'crypto' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Cryptocurrency Type</label>
+                      <select
+                        value={redemptionForm.paymentDetails.cryptoType}
+                        onChange={(e) => setRedemptionForm({
+                          ...redemptionForm,
+                          paymentDetails: { ...redemptionForm.paymentDetails, cryptoType: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                      >
+                        <option value="bitcoin">Bitcoin (BTC)</option>
+                        <option value="ethereum">Ethereum (ETH)</option>
+                        <option value="usdt">Tether (USDT)</option>
+                        <option value="usdc">USD Coin (USDC)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Wallet Address</label>
+                      <input
+                        type="text"
+                        value={redemptionForm.paymentDetails.cryptoWallet}
+                        onChange={(e) => setRedemptionForm({
+                          ...redemptionForm,
+                          paymentDetails: { ...redemptionForm.paymentDetails, cryptoWallet: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                        placeholder="Enter your wallet address"
+                        required
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -490,6 +532,8 @@ const RewardsManager: React.FC = () => {
                       <option value="google_play">Google Play Gift Card</option>
                       <option value="apple">Apple Gift Card</option>
                       <option value="steam">Steam Gift Card</option>
+                      <option value="netflix">Netflix Gift Card</option>
+                      <option value="spotify">Spotify Gift Card</option>
                     </select>
                   </div>
                 )}

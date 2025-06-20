@@ -18,10 +18,10 @@ export function useSupabaseAuth() {
 async function setupSupabaseAuth(currentUser: any) {
   try {
     // Get the Firebase ID token (JWT)
-    const idToken = await currentUser.getIdToken()
+    const idToken = await currentUser.getIdToken(true) // Force refresh
     
     // Set Supabase auth session with the Firebase JWT
-    await supabase.auth.setSession({
+    const { error: sessionError } = await supabase.auth.setSession({
       access_token: idToken,
       refresh_token: idToken,
       expires_in: 3600,
@@ -33,6 +33,7 @@ async function setupSupabaseAuth(currentUser: any) {
         user_metadata: {
           full_name: currentUser.displayName || '',
           avatar_url: currentUser.photoURL || '',
+          email: currentUser.email || '',
         },
         app_metadata: {},
         aud: 'authenticated',
@@ -40,6 +41,11 @@ async function setupSupabaseAuth(currentUser: any) {
         updated_at: new Date().toISOString(),
       }
     })
+
+    if (sessionError) {
+      console.error('Error setting Supabase session:', sessionError)
+      return
+    }
 
     // Create user_extended record if it doesn't exist
     await createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')
@@ -51,22 +57,20 @@ async function setupSupabaseAuth(currentUser: any) {
 // Helper function to create user_extended record
 async function createUserExtendedRecord(userId: string, email: string, displayName: string) {
   try {
-    // Use maybeSingle() instead of single() to handle cases where no record exists
-    const { data: existingUser, error: selectError } = await supabase
-      .from('users_extended')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle()
+    // First try to call the database function
+    const { error: functionError } = await supabase.rpc('handle_firebase_user_creation', {
+      firebase_uid: userId,
+      user_email: email,
+      display_name: displayName
+    })
 
-    if (selectError) {
-      console.error('Error checking existing user:', selectError)
-      return
-    }
-
-    if (!existingUser) {
-      const { error } = await supabase
+    if (functionError) {
+      console.error('Error calling user creation function:', functionError)
+      
+      // Fallback: try direct insert
+      const { error: insertError } = await supabase
         .from('users_extended')
-        .insert([{
+        .upsert([{
           user_id: userId,
           username: displayName || `User${userId.slice(-4)}`,
           level: 1,
@@ -78,16 +82,20 @@ async function createUserExtendedRecord(userId: string, email: string, displayNa
           is_premium: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }])
+        }], {
+          onConflict: 'user_id'
+        })
 
-      if (error) {
-        console.error('Error creating user_extended record:', error)
+      if (insertError) {
+        console.error('Error creating user_extended record:', insertError)
       } else {
         console.log('Created user_extended record for:', userId)
       }
+    } else {
+      console.log('Successfully called user creation function for:', userId)
     }
   } catch (error) {
-    console.error('Error checking/creating user_extended record:', error)
+    console.error('Error in createUserExtendedRecord:', error)
   }
 }
 

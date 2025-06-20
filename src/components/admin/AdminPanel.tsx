@@ -18,7 +18,8 @@ import {
   Award,
   Gift,
   Target,
-  Star
+  Star,
+  RefreshCw
 } from 'lucide-react'
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
 import { Course, Problem, UserExtended, AdminUser, supabase } from '../../lib/supabase'
@@ -29,7 +30,7 @@ const AdminPanel: React.FC = () => {
   const { currentUser } = useAuth()
   const { data: courses, loading: coursesLoading } = useRealTimeSubscription<Course>('courses', undefined)
   const { data: problems, loading: problemsLoading } = useRealTimeSubscription<Problem>('problems', undefined)
-  const { data: users, loading: usersLoading } = useRealTimeSubscription<UserExtended>('users_extended', undefined)
+  const { data: users, loading: usersLoading, refetch: refetchUsers } = useRealTimeSubscription<UserExtended>('users_extended', undefined)
   const { data: admins, loading: adminsLoading } = useRealTimeSubscription<AdminUser>('admin_users', undefined)
   
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'problems' | 'rewards' | 'admins'>('overview')
@@ -248,6 +249,11 @@ const AdminPanel: React.FC = () => {
       })
     }
     setShowAddForm(true)
+  }
+
+  const handleRefreshUsers = () => {
+    refetchUsers()
+    toast.success('User list refreshed!')
   }
 
   const renderOverview = () => (
@@ -799,67 +805,178 @@ const AdminPanel: React.FC = () => {
 
   const renderUsers = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-slate-100">User Management</h3>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-xl font-semibold text-slate-100">User Management</h3>
+          <p className="text-sm text-slate-400 mt-1">
+            {usersLoading ? 'Loading users...' : `${users.length} registered users`}
+          </p>
+        </div>
+        <button
+          onClick={handleRefreshUsers}
+          disabled={usersLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${usersLoading ? 'animate-spin' : ''}`} />
+          Refresh Users
+        </button>
       </div>
 
-      <div className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-700/50 border-b border-slate-600/50">
-              <tr>
-                <th className="text-left p-4 text-sm font-medium text-slate-300">User</th>
-                <th className="text-left p-4 text-sm font-medium text-slate-300">Level</th>
-                <th className="text-left p-4 text-sm font-medium text-slate-300">Points</th>
-                <th className="text-left p-4 text-sm font-medium text-slate-300">Status</th>
-                <th className="text-left p-4 text-sm font-medium text-slate-300">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-slate-700/30 hover:bg-slate-700/20">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-bold">
-                          {(user.username || 'U')[0].toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-slate-100">
-                          {user.username || `User ${user.user_id.slice(-4)}`}
-                        </div>
-                        <div className="text-sm text-slate-400">{user.user_id}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4 text-slate-300">{user.level}</td>
-                  <td className="p-4 text-slate-300">{user.total_score}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      user.is_premium 
-                        ? 'bg-yellow-500/20 text-yellow-400' 
-                        : 'bg-slate-500/20 text-slate-400'
-                    }`}>
-                      {user.is_premium ? 'Premium' : 'Free'}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-slate-400 hover:text-green-400 transition-colors">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+      {usersLoading ? (
+        <div className="bg-slate-700/30 rounded-xl p-8 border border-slate-600/30">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-slate-600 rounded w-1/4"></div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-16 bg-slate-600 rounded"></div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : users.length === 0 ? (
+        <div className="bg-slate-700/30 rounded-xl p-12 border border-slate-600/30 text-center">
+          <Users className="w-16 h-16 mx-auto mb-4 text-slate-400 opacity-50" />
+          <h4 className="text-lg font-semibold text-slate-300 mb-2">No users found</h4>
+          <p className="text-slate-400 mb-4">
+            No users are currently registered in the system.
+          </p>
+          <button
+            onClick={handleRefreshUsers}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors mx-auto"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
+      ) : (
+        <div className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-700/50 border-b border-slate-600/50">
+                <tr>
+                  <th className="text-left p-4 text-sm font-medium text-slate-300">User</th>
+                  <th className="text-left p-4 text-sm font-medium text-slate-300">Level</th>
+                  <th className="text-left p-4 text-sm font-medium text-slate-300">Points</th>
+                  <th className="text-left p-4 text-sm font-medium text-slate-300">Status</th>
+                  <th className="text-left p-4 text-sm font-medium text-slate-300">Joined</th>
+                  <th className="text-left p-4 text-sm font-medium text-slate-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id} className="border-b border-slate-700/30 hover:bg-slate-700/20">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">
+                            {(user.username || user.user_id || 'U')[0].toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-100">
+                            {user.username || `User ${user.user_id?.slice(-4) || 'Unknown'}`}
+                          </div>
+                          <div className="text-sm text-slate-400 truncate max-w-[200px]">
+                            {user.user_id || 'No ID'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-300 font-medium">{user.level || 1}</span>
+                        <div className="w-8 h-2 bg-slate-600 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-orange-400 rounded-full transition-all duration-300"
+                            style={{ width: `${((user.experience_points || 0) % 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-slate-300 font-medium">{user.total_score || 0}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1 text-xs rounded-full font-medium ${
+                        user.is_premium 
+                          ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' 
+                          : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                      }`}>
+                        {user.is_premium ? 'Premium' : 'Free'}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-slate-400">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          className="p-2 text-slate-400 hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-600/50"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="p-2 text-slate-400 hover:text-green-400 transition-colors rounded-lg hover:bg-slate-600/50"
+                          title="Edit User"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="p-2 text-slate-400 hover:text-red-400 transition-colors rounded-lg hover:bg-slate-600/50"
+                          title="Suspend User"
+                        >
+                          <UserX className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* User Statistics */}
+      {users.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="w-8 h-8 text-blue-400" />
+              <h4 className="text-lg font-semibold text-slate-100">Total Users</h4>
+            </div>
+            <div className="text-3xl font-bold text-blue-400 mb-2">{users.length}</div>
+            <div className="text-sm text-slate-400">Registered learners</div>
+          </div>
+
+          <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
+            <div className="flex items-center gap-3 mb-4">
+              <Star className="w-8 h-8 text-yellow-400" />
+              <h4 className="text-lg font-semibold text-slate-100">Premium Users</h4>
+            </div>
+            <div className="text-3xl font-bold text-yellow-400 mb-2">
+              {users.filter(u => u.is_premium).length}
+            </div>
+            <div className="text-sm text-slate-400">
+              {Math.round((users.filter(u => u.is_premium).length / users.length) * 100)}% of total
+            </div>
+          </div>
+
+          <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
+            <div className="flex items-center gap-3 mb-4">
+              <Target className="w-8 h-8 text-green-400" />
+              <h4 className="text-lg font-semibold text-slate-100">Avg. Level</h4>
+            </div>
+            <div className="text-3xl font-bold text-green-400 mb-2">
+              {Math.round(users.reduce((sum, u) => sum + (u.level || 1), 0) / users.length)}
+            </div>
+            <div className="text-sm text-slate-400">Average user level</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 
@@ -937,7 +1054,7 @@ const AdminPanel: React.FC = () => {
     }
   }
 
-  if (loading) {
+  if (loading && activeTab === 'overview') {
     return (
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
         <div className="animate-pulse">
@@ -984,6 +1101,11 @@ const AdminPanel: React.FC = () => {
               >
                 <Icon className="w-4 h-4" />
                 {tab.label}
+                {tab.id === 'users' && users.length > 0 && (
+                  <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full">
+                    {users.length}
+                  </span>
+                )}
               </button>
             )
           })}

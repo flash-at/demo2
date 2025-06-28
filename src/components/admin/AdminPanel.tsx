@@ -25,6 +25,7 @@ import { useRealTimeSubscription, importCurrentFirebaseUser } from '../../hooks/
 import { Course, Problem, AdminUser, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import DirectFirebaseUserManager from './DirectFirebaseUserManager'
+import CourseAdminPanel from './CourseAdminPanel'
 import toast from 'react-hot-toast'
 
 const AdminPanel: React.FC = () => {
@@ -295,174 +296,17 @@ const AdminPanel: React.FC = () => {
     </div>
   )
 
-  const renderCourses = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-slate-100">Course Management</h3>
-        <button
-          onClick={() => {
-            setShowAddForm(true)
-            setEditingItem(null)
-            setCourseForm({
-              title: '',
-              description: '',
-              category: 'java',
-              difficulty: 'beginner',
-              duration_hours: 0,
-              is_premium: false,
-              is_published: true
-            })
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Course
-        </button>
-      </div>
-
-      {showAddForm && (
-        <form onSubmit={handleCourseSubmit} className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
-          <div className="flex items-center justify-between mb-6">
-            <h4 className="text-lg font-semibold text-slate-100">
-              {editingItem ? 'Edit Course' : 'Add New Course'}
-            </h4>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddForm(false)
-                setEditingItem(null)
-              }}
-              className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input
-              type="text"
-              placeholder="Course title"
-              value={courseForm.title}
-              onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
-              required
-            />
-            
-            <select
-              value={courseForm.category}
-              onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value as any })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
-            >
-              <option value="java">Java</option>
-              <option value="python">Python</option>
-              <option value="dsa">Data Structures & Algorithms</option>
-              <option value="web">Web Development</option>
-              <option value="mobile">Mobile Development</option>
-              <option value="database">Database</option>
-            </select>
-          </div>
-
-          <textarea
-            placeholder="Course description"
-            value={courseForm.description}
-            onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
-            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 mb-4"
-            rows={3}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <select
-              value={courseForm.difficulty}
-              onChange={(e) => setCourseForm({ ...courseForm, difficulty: e.target.value as any })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
-            >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
-
-            <input
-              type="number"
-              placeholder="Duration (hours)"
-              value={courseForm.duration_hours}
-              onChange={(e) => setCourseForm({ ...courseForm, duration_hours: parseInt(e.target.value) || 0 })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
-              min="0"
-            />
-
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={courseForm.is_premium}
-                  onChange={(e) => setCourseForm({ ...courseForm, is_premium: e.target.checked })}
-                  className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
-                />
-                Premium
-              </label>
-              
-              <label className="flex items-center gap-2 text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={courseForm.is_published}
-                  onChange={(e) => setCourseForm({ ...courseForm, is_published: e.target.checked })}
-                  className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
-                />
-                Published
-              </label>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors"
-            >
-              <Save className="w-4 h-4" />
-              {editingItem ? 'Update Course' : 'Create Course'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <div key={course.id} className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold text-slate-100">{course.title}</h4>
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                course.is_published 
-                  ? 'bg-green-500/20 text-green-400' 
-                  : 'bg-yellow-500/20 text-yellow-400'
-              }`}>
-                {course.is_published ? 'Published' : 'Draft'}
-              </span>
-            </div>
-            <p className="text-sm text-slate-400 mb-4">{course.description}</p>
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
-              <span>{course.category}</span>
-              <span>{course.difficulty}</span>
-              <span>{course.duration_hours}h</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleEdit(course, 'course')}
-                className="flex-1 px-3 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-sm border border-blue-500/30 hover:bg-blue-500/30 transition-colors"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete('courses', course.id)}
-                className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm border border-red-500/30 hover:bg-red-500/30 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview': return renderOverview()
+      case 'users': return <DirectFirebaseUserManager />
+      case 'courses': return <CourseAdminPanel />
+      case 'problems': return renderProblems()
+      case 'rewards': return renderRewards()
+      case 'admins': return renderAdmins()
+      default: return renderOverview()
+    }
+  }
 
   const renderProblems = () => (
     <div className="space-y-6">
@@ -854,18 +698,6 @@ const AdminPanel: React.FC = () => {
       </div>
     </div>
   )
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'overview': return renderOverview()
-      case 'users': return <DirectFirebaseUserManager />
-      case 'courses': return renderCourses()
-      case 'problems': return renderProblems()
-      case 'rewards': return renderRewards()
-      case 'admins': return renderAdmins()
-      default: return renderOverview()
-    }
-  }
 
   if (loading && activeTab === 'overview') {
     return (

@@ -1,18 +1,28 @@
 import React, { useState } from 'react'
-import { BookOpen, Play, Clock, Star, Users, ChevronRight, Filter, Search, CheckCircle, Award, Calendar, Book } from 'lucide-react'
+import { BookOpen, Play, Clock, Star, Users, ChevronRight, Filter, Search, CheckCircle, Award, Calendar, Book, Layers, User, Download, Edit, Trash2, Plus } from 'lucide-react'
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
-import { Course } from '../../lib/supabase'
+import { Course, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
 
 const CoursesManager: React.FC = () => {
   const { currentUser } = useAuth()
-  const { data: courses, loading } = useRealTimeSubscription<Course>('courses', undefined)
+  const { data: courses, loading, refetch } = useRealTimeSubscription<Course>('courses', undefined)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [showCourseModal, setShowCourseModal] = useState(false)
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // Check if user is admin
+  React.useEffect(() => {
+    if (currentUser?.email) {
+      const adminEmails = ['maheshch1094@gmail.com', 'admin@codecafe.com']
+      setIsAdmin(adminEmails.includes(currentUser.email.toLowerCase()))
+    }
+  }, [currentUser])
 
   const categories = [
     { value: 'all', label: 'All Categories', icon: '📚' },
@@ -65,15 +75,205 @@ const CoursesManager: React.FC = () => {
     }
   }
 
-  const handleStartLearning = (course: Course) => {
+  const handleStartLearning = async (course: Course) => {
     setSelectedCourse(course)
     setShowCourseModal(true)
-    toast.success(`Starting ${course.title} course!`)
+    
+    try {
+      // Check if user is already enrolled
+      if (!enrolledCourses.includes(course.id)) {
+        // In a real app, you would create a user_progress record here
+        // For demo purposes, we'll just update the local state
+        setEnrolledCourses(prev => [...prev, course.id])
+        
+        // Create analytics entry
+        if (currentUser) {
+          const { error } = await supabase.from('analytics').insert([{
+            user_id: currentUser.uid,
+            metric_name: 'course_view',
+            metric_value: 1,
+            date: new Date().toISOString().split('T')[0]
+          }])
+          
+          if (error) {
+            console.error('Error logging analytics:', error)
+          }
+        }
+      }
+      
+      toast.success(`Starting ${course.title} course!`)
+    } catch (error) {
+      console.error('Error enrolling in course:', error)
+    }
+  }
+
+  const handleEnrollCourse = async () => {
+    if (!selectedCourse || !currentUser) return
+    
+    try {
+      // Create user_progress record
+      const { error } = await supabase.from('user_progress').insert([{
+        user_id: currentUser.uid,
+        course_id: selectedCourse.id,
+        is_completed: false,
+        completion_percentage: 0,
+        time_spent_minutes: 0,
+        last_accessed: new Date().toISOString()
+      }])
+      
+      if (error && !error.message.includes('duplicate')) {
+        throw error
+      }
+      
+      // Create activity record
+      await supabase.from('activities').insert([{
+        user_id: currentUser.uid,
+        action: 'course_enrolled',
+        description: `Enrolled in course "${selectedCourse.title}"`,
+        metadata: { course_id: selectedCourse.id, course_title: selectedCourse.title }
+      }])
+      
+      // Add to enrolled courses
+      if (!enrolledCourses.includes(selectedCourse.id)) {
+        setEnrolledCourses(prev => [...prev, selectedCourse.id])
+      }
+      
+      toast.success(`Successfully enrolled in ${selectedCourse.title}!`)
+      
+      // Close modal after a short delay
+      setTimeout(() => {
+        setShowCourseModal(false)
+        setSelectedCourse(null)
+      }, 1500)
+    } catch (error: any) {
+      toast.error(`Failed to enroll: ${error.message}`)
+    }
   }
 
   const closeCourseModal = () => {
     setSelectedCourse(null)
     setShowCourseModal(false)
+  }
+
+  // Admin functions
+  const [showAddCourseForm, setShowAddCourseForm] = useState(false)
+  const [courseForm, setCourseForm] = useState<Partial<Course>>({
+    title: '',
+    description: '',
+    category: 'java',
+    difficulty: 'beginner',
+    duration_hours: 0,
+    is_premium: false,
+    is_published: true,
+    order_index: 0
+  })
+
+  const handleAddCourse = async () => {
+    if (!currentUser) return
+    
+    try {
+      const newCourse = {
+        ...courseForm,
+        created_by: currentUser.uid,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        order_index: courses.length + 1
+      }
+      
+      const { error } = await supabase.from('courses').insert([newCourse])
+      
+      if (error) throw error
+      
+      toast.success('Course created successfully!')
+      setShowAddCourseForm(false)
+      setCourseForm({
+        title: '',
+        description: '',
+        category: 'java',
+        difficulty: 'beginner',
+        duration_hours: 0,
+        is_premium: false,
+        is_published: true,
+        order_index: 0
+      })
+      
+      // Refresh courses
+      refetch()
+    } catch (error: any) {
+      toast.error(`Failed to create course: ${error.message}`)
+    }
+  }
+
+  const handleEditCourse = (course: Course) => {
+    setCourseForm({
+      title: course.title,
+      description: course.description,
+      category: course.category,
+      difficulty: course.difficulty,
+      duration_hours: course.duration_hours,
+      is_premium: course.is_premium,
+      is_published: course.is_published,
+      order_index: course.order_index
+    })
+    setSelectedCourse(course)
+    setShowAddCourseForm(true)
+  }
+
+  const handleUpdateCourse = async () => {
+    if (!currentUser || !selectedCourse) return
+    
+    try {
+      const updatedCourse = {
+        ...courseForm,
+        updated_at: new Date().toISOString()
+      }
+      
+      const { error } = await supabase
+        .from('courses')
+        .update(updatedCourse)
+        .eq('id', selectedCourse.id)
+      
+      if (error) throw error
+      
+      toast.success('Course updated successfully!')
+      setShowAddCourseForm(false)
+      setSelectedCourse(null)
+      setCourseForm({
+        title: '',
+        description: '',
+        category: 'java',
+        difficulty: 'beginner',
+        duration_hours: 0,
+        is_premium: false,
+        is_published: true,
+        order_index: 0
+      })
+      
+      // Refresh courses
+      refetch()
+    } catch (error: any) {
+      toast.error(`Failed to update course: ${error.message}`)
+    }
+  }
+
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) return
+    
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseId)
+      
+      if (error) throw error
+      
+      toast.success('Course deleted successfully!')
+      
+      // Refresh courses
+      refetch()
+    } catch (error: any) {
+      toast.error(`Failed to delete course: ${error.message}`)
+    }
   }
 
   if (loading) {
@@ -101,16 +301,42 @@ const CoursesManager: React.FC = () => {
             <p className="text-slate-400">Master programming with our comprehensive courses</p>
           </div>
           
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-64"
-            />
+          <div className="flex items-center gap-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-64"
+              />
+            </div>
+            
+            {/* Admin: Add Course Button */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setSelectedCourse(null)
+                  setCourseForm({
+                    title: '',
+                    description: '',
+                    category: 'java',
+                    difficulty: 'beginner',
+                    duration_hours: 0,
+                    is_premium: false,
+                    is_published: true,
+                    order_index: 0
+                  })
+                  setShowAddCourseForm(true)
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Course
+              </button>
+            )}
           </div>
         </div>
 
@@ -226,15 +452,36 @@ const CoursesManager: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Action Button */}
-                <button 
-                  onClick={() => handleStartLearning(course)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
-                >
-                  <Play className="w-4 h-4" />
-                  Start Learning
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleStartLearning(course)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                  >
+                    <Play className="w-4 h-4" />
+                    Start Learning
+                  </button>
+                  
+                  {/* Admin Edit/Delete Buttons */}
+                  {isAdmin && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditCourse(course)}
+                        className="p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                        title="Edit Course"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCourse(course.id)}
+                        className="p-3 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                        title="Delete Course"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -313,12 +560,12 @@ const CoursesManager: React.FC = () => {
                   <div className="text-xs text-slate-400">Course Duration</div>
                 </div>
                 <div className="bg-slate-700/30 rounded-lg p-4 text-center">
-                  <Book className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                  <Layers className="w-6 h-6 text-purple-400 mx-auto mb-2" />
                   <div className="text-xl font-bold text-slate-100">12</div>
                   <div className="text-xs text-slate-400">Modules</div>
                 </div>
                 <div className="bg-slate-700/30 rounded-lg p-4 text-center">
-                  <Calendar className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <User className="w-6 h-6 text-green-400 mx-auto mb-2" />
                   <div className="text-xl font-bold text-slate-100">24/7</div>
                   <div className="text-xs text-slate-400">Access</div>
                 </div>
@@ -475,21 +722,189 @@ const CoursesManager: React.FC = () => {
                 
                 <div className="flex gap-4">
                   <button 
-                    onClick={() => {
-                      toast.success(`Enrolled in ${selectedCourse.title}!`)
-                      closeCourseModal()
-                    }}
+                    onClick={handleEnrollCourse}
                     className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
                   >
                     <Play className="w-5 h-5" />
-                    Start Course Now
+                    {enrolledCourses.includes(selectedCourse.id) ? 'Continue Learning' : 'Enroll Now'}
                   </button>
+                  
+                  {selectedCourse.is_premium && (
+                    <button
+                      onClick={() => {
+                        toast.success('Premium features will be available soon!')
+                      }}
+                      className="px-6 py-3 bg-yellow-500/20 text-yellow-400 rounded-lg transition-colors border border-yellow-500/30 hover:bg-yellow-500/30"
+                    >
+                      <Download className="w-5 h-5" />
+                    </button>
+                  )}
                   
                   <button
                     onClick={closeCourseModal}
                     className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
                   >
                     Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin: Add/Edit Course Form */}
+      {isAdmin && showAddCourseForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-100">
+                  {selectedCourse ? 'Edit Course' : 'Add New Course'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowAddCourseForm(false)
+                    setSelectedCourse(null)
+                  }}
+                  className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Course Title
+                  </label>
+                  <input
+                    type="text"
+                    value={courseForm.title}
+                    onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                    placeholder="Enter course title"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={courseForm.description}
+                    onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                    placeholder="Enter course description"
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={courseForm.category}
+                      onChange={(e) => setCourseForm({...courseForm, category: e.target.value as any})}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                    >
+                      {categories.slice(1).map(category => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Difficulty
+                    </label>
+                    <select
+                      value={courseForm.difficulty}
+                      onChange={(e) => setCourseForm({...courseForm, difficulty: e.target.value as any})}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                    >
+                      {difficulties.slice(1).map(difficulty => (
+                        <option key={difficulty.value} value={difficulty.value}>
+                          {difficulty.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Duration (hours)
+                    </label>
+                    <input
+                      type="number"
+                      value={courseForm.duration_hours}
+                      onChange={(e) => setCourseForm({...courseForm, duration_hours: parseInt(e.target.value) || 0})}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                      min="0"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Order Index
+                    </label>
+                    <input
+                      type="number"
+                      value={courseForm.order_index}
+                      onChange={(e) => setCourseForm({...courseForm, order_index: parseInt(e.target.value) || 0})}
+                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+                      min="0"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={courseForm.is_premium}
+                      onChange={(e) => setCourseForm({...courseForm, is_premium: e.target.checked})}
+                      className="rounded border-slate-600 text-orange-500 focus:ring-orange-500"
+                    />
+                    <span className="text-sm text-slate-300">Premium Course</span>
+                  </label>
+                  
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={courseForm.is_published}
+                      onChange={(e) => setCourseForm({...courseForm, is_published: e.target.checked})}
+                      className="rounded border-slate-600 text-orange-500 focus:ring-orange-500"
+                    />
+                    <span className="text-sm text-slate-300">Published</span>
+                  </label>
+                </div>
+                
+                <div className="flex gap-4 pt-4">
+                  <button
+                    onClick={selectedCourse ? handleUpdateCourse : handleAddCourse}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                  >
+                    {selectedCourse ? 'Update Course' : 'Create Course'}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowAddCourseForm(false)
+                      setSelectedCourse(null)
+                    }}
+                    className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
+                  >
+                    Cancel
                   </button>
                 </div>
               </div>

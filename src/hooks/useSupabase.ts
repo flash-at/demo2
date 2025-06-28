@@ -35,10 +35,12 @@ async function createUserExtendedRecord(userId: string, email: string, displayNa
       .from('users_extended')
       .select('id, user_id')
       .eq('user_id', userId)
-      .single()
+      .maybeSingle() // Use maybeSingle() instead of single() to handle zero rows gracefully
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+    // Only log actual errors, not the expected "no rows" case
+    if (checkError) {
       console.error('Error checking existing user:', checkError)
+      return
     }
 
     if (existingUser) {

@@ -398,7 +398,7 @@ export function useRealTimeSubscription<T>(
         const mockData = generateMockData<T>(table, userId)
         setData(mockData as T[])
       } else {
-        setData(supabaseData || [])
+        setData((supabaseData || []) as T[])
       }
       
       setError(null)
@@ -453,7 +453,7 @@ export function useSupabaseQuery<T>(
           const mockData = generateMockData<T>(table)
           setData(mockData as T[])
         } else {
-          setData(result || [])
+          setData((result || []) as T[])
         }
         
         setError(null)

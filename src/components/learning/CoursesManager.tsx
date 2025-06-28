@@ -3,6 +3,7 @@ import { BookOpen, Play, Clock, Star, Users, ChevronRight, Filter, Search } from
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
 import { Course } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import toast from 'react-hot-toast'
 
 const CoursesManager: React.FC = () => {
   const { currentUser } = useAuth()
@@ -10,6 +11,8 @@ const CoursesManager: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [showCourseModal, setShowCourseModal] = useState(false)
 
   const categories = [
     { value: 'all', label: 'All Categories', icon: '📚' },
@@ -48,6 +51,17 @@ const CoursesManager: React.FC = () => {
   const getCategoryIcon = (category: string) => {
     const cat = categories.find(c => c.value === category)
     return cat?.icon || '📚'
+  }
+
+  const handleStartLearning = (course: Course) => {
+    setSelectedCourse(course)
+    setShowCourseModal(true)
+    toast.success(`Starting ${course.title} course!`)
+  }
+
+  const closeCourseModal = () => {
+    setSelectedCourse(null)
+    setShowCourseModal(false)
   }
 
   if (loading) {
@@ -180,7 +194,10 @@ const CoursesManager: React.FC = () => {
                 </div>
 
                 {/* Action Button */}
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg transition-colors border border-orange-500/30">
+                <button 
+                  onClick={() => handleStartLearning(course)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg transition-colors border border-orange-500/30"
+                >
                   <Play className="w-4 h-4" />
                   Start Learning
                   <ChevronRight className="w-4 h-4" />
@@ -215,6 +232,153 @@ const CoursesManager: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Course Modal */}
+      {showCourseModal && selectedCourse && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">{getCategoryIcon(selectedCourse.category)}</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-100">{selectedCourse.title}</h2>
+                </div>
+                <button
+                  onClick={closeCourseModal}
+                  className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex flex-wrap gap-3 mb-6">
+                <span className={`px-2 py-1 text-xs rounded-full border ${getDifficultyColor(selectedCourse.difficulty)}`}>
+                  {selectedCourse.difficulty}
+                </span>
+                <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">
+                  {selectedCourse.category}
+                </span>
+                <span className="px-2 py-1 text-xs bg-purple-500/20 text-purple-400 rounded-full border border-purple-500/30">
+                  {selectedCourse.duration_hours} hours
+                </span>
+                {selectedCourse.is_premium && (
+                  <span className="px-2 py-1 text-xs bg-yellow-500/20 text-yellow-400 rounded-full border border-yellow-500/30">
+                    Premium
+                  </span>
+                )}
+              </div>
+              
+              <div className="prose prose-slate max-w-none">
+                <h3 className="text-lg font-semibold text-slate-100 mb-4">Course Description</h3>
+                <p className="text-slate-300 mb-6">{selectedCourse.description || 'No description available for this course.'}</p>
+                
+                <h3 className="text-lg font-semibold text-slate-100 mb-4">What You'll Learn</h3>
+                <ul className="space-y-2 mb-6">
+                  <li className="flex items-start gap-2">
+                    <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-slate-300">Fundamentals and core concepts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-slate-300">Practical examples and real-world applications</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-slate-300">Advanced techniques and best practices</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-slate-300">Hands-on projects and coding exercises</span>
+                  </li>
+                </ul>
+                
+                <h3 className="text-lg font-semibold text-slate-100 mb-4">Course Curriculum</h3>
+                <div className="space-y-3 mb-6">
+                  <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30">
+                    <h4 className="font-medium text-slate-100 mb-2">Module 1: Introduction</h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Play className="w-4 h-4 text-orange-400" />
+                          <span className="text-sm text-slate-300">Getting Started</span>
+                        </div>
+                        <span className="text-xs text-slate-400">15 min</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Play className="w-4 h-4 text-orange-400" />
+                          <span className="text-sm text-slate-300">Environment Setup</span>
+                        </div>
+                        <span className="text-xs text-slate-400">20 min</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30">
+                    <h4 className="font-medium text-slate-100 mb-2">Module 2: Core Concepts</h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Play className="w-4 h-4 text-orange-400" />
+                          <span className="text-sm text-slate-300">Fundamentals</span>
+                        </div>
+                        <span className="text-xs text-slate-400">45 min</span>
+                      </li>
+                      <li className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Play className="w-4 h-4 text-orange-400" />
+                          <span className="text-sm text-slate-300">Advanced Topics</span>
+                        </div>
+                        <span className="text-xs text-slate-400">60 min</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => {
+                      toast.success(`Enrolled in ${selectedCourse.title}!`)
+                      closeCourseModal()
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+                  >
+                    <Play className="w-5 h-5" />
+                    Start Course Now
+                  </button>
+                  
+                  <button
+                    onClick={closeCourseModal}
+                    className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

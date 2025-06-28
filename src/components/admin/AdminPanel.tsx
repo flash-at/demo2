@@ -17,7 +17,9 @@ import {
   Star,
   RefreshCw,
   UserPlus,
-  Download
+  Download,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react'
 import { useRealTimeSubscription, importCurrentFirebaseUser } from '../../hooks/useSupabase'
 import { Course, Problem, UserExtended, AdminUser, supabase } from '../../lib/supabase'
@@ -876,15 +878,37 @@ const AdminPanel: React.FC = () => {
           <p className="text-slate-400 mb-6">
             No users are currently registered in the system. Import the current Firebase user to get started.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          
+          {/* Prominent call-to-action */}
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-6 mb-6">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-blue-400" />
+              <h5 className="text-lg font-semibold text-blue-400">Getting Started</h5>
+            </div>
+            <p className="text-slate-300 mb-4">
+              You're currently logged in as <strong>{currentUser?.displayName || currentUser?.email}</strong>. 
+              Click the button below to import your Firebase user account into the system.
+            </p>
             <button
               onClick={handleImportCurrentUser}
               disabled={isImporting}
-              className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-3 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors disabled:opacity-50 mx-auto text-lg font-semibold"
             >
-              <UserPlus className={`w-4 h-4 ${isImporting ? 'animate-spin' : ''}`} />
-              Import Current User
+              {isImporting ? (
+                <>
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  Import My Account
+                </>
+              )}
             </button>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={handleRefreshUsers}
               disabled={isImporting}

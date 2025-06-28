@@ -35,6 +35,8 @@ try {
   console.log('Firebase Admin SDK initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase Admin SDK:', error);
+  console.error('Please verify your Firebase service account credentials in the .env file');
+  console.error('Make sure the private key is properly formatted with escaped newlines (\\\\n)');
 }
 
 // Admin emails that can access the API

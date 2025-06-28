@@ -29,12 +29,20 @@ cp .env.example .env
 
 Extract the following values from your downloaded service account JSON file and add them to `.env`:
 
+**IMPORTANT**: For the private key, you need to escape the newlines properly. Copy the entire private key from the JSON file (including the `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----` parts) and replace all `\n` with `\\n` when placing it in the `.env` file with double quotes:
+
 ```env
 FIREBASE_PRIVATE_KEY_ID=your_private_key_id_from_json
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_private_key_from_json\n-----END PRIVATE KEY-----"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\nyour_actual_private_key_content_here\\n-----END PRIVATE KEY-----"
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@portfolio-56be7.iam.gserviceaccount.com
 FIREBASE_CLIENT_ID=your_client_id_from_json
 FIREBASE_CLIENT_CERT_URL=your_client_cert_url_from_json
+```
+
+**Alternative**: You can also use single quotes or no quotes for the private key, in which case use `\n` instead of `\\n`:
+
+```env
+FIREBASE_PRIVATE_KEY='-----BEGIN PRIVATE KEY-----\nyour_actual_private_key_content_here\n-----END PRIVATE KEY-----'
 ```
 
 ### 4. Start the Server

@@ -339,23 +339,7 @@ function generateMockData<T>(table: string, userId?: string): T[] {
         claimed_at: null
       }
     ],
-    users_extended: [
-      {
-        id: '1',
-        user_id: userId || 'mock-user',
-        username: 'demo_user',
-        level: 5,
-        experience_points: 1250,
-        total_score: 625,
-        streak_days: 7,
-        last_activity_date: new Date().toISOString().split('T')[0],
-        preferred_language: 'java',
-        bio: 'Learning to code with CodeCafe!',
-        is_premium: false,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: new Date().toISOString()
-      }
-    ],
+    users_extended: [],
     submissions: [
       {
         id: '1',
@@ -387,55 +371,11 @@ export function useRealTimeSubscription<T>(
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        
-        // Try to fetch from Supabase first
-        let query = supabase.from(table).select('*')
-        
-        if (userId && table !== 'courses' && table !== 'problems' && table !== 'leaderboard') {
-          query = query.eq('user_id', userId)
-        }
-        
-        if (filter) {
-          // Parse filter string like "status.eq.completed"
-          const [column, operator, value] = filter.split('.')
-          query = query.filter(column, operator, value)
-        }
-
-        const orderColumn = getOrderColumn(table)
-        const { data: supabaseData, error: supabaseError } = await query.order(orderColumn, { ascending: false })
-        
-        if (supabaseError) {
-          console.warn(`Supabase error for ${table}, using mock data:`, supabaseError)
-          // Use mock data as fallback
-          const mockData = generateMockData<T>(table, userId)
-          setData(mockData)
-        } else {
-          setData(supabaseData || [])
-        }
-        
-        setError(null)
-      } catch (err: any) {
-        console.warn(`Error fetching ${table}, using mock data:`, err)
-        // Use mock data as fallback
-        const mockData = generateMockData<T>(table, userId)
-        setData(mockData)
-        setError(null) // Don't show error since we have fallback data
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [table, filter, userId])
-
-  const refetch = async () => {
-    setLoading(true)
-    // Re-run the fetch logic
+  const fetchData = async () => {
     try {
+      setLoading(true)
+      
+      // Try to fetch from Supabase first
       let query = supabase.from(table).select('*')
       
       if (userId && table !== 'courses' && table !== 'problems' && table !== 'leaderboard') {
@@ -443,6 +383,7 @@ export function useRealTimeSubscription<T>(
       }
       
       if (filter) {
+        // Parse filter string like "status.eq.completed"
         const [column, operator, value] = filter.split('.')
         query = query.filter(column, operator, value)
       }
@@ -452,6 +393,7 @@ export function useRealTimeSubscription<T>(
       
       if (supabaseError) {
         console.warn(`Supabase error for ${table}, using mock data:`, supabaseError)
+        // Use mock data as fallback
         const mockData = generateMockData<T>(table, userId)
         setData(mockData)
       } else {
@@ -461,12 +403,21 @@ export function useRealTimeSubscription<T>(
       setError(null)
     } catch (err: any) {
       console.warn(`Error fetching ${table}, using mock data:`, err)
+      // Use mock data as fallback
       const mockData = generateMockData<T>(table, userId)
       setData(mockData)
-      setError(null)
+      setError(null) // Don't show error since we have fallback data
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [table, filter, userId])
+
+  const refetch = async () => {
+    await fetchData()
   }
 
   return { data, loading, error, refetch }

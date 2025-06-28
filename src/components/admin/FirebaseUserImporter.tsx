@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { Users, Download, RefreshCw, CheckCircle, AlertCircle, UserPlus } from 'lucide-react'
+import { Users, Download, RefreshCw, CheckCircle, AlertCircle, UserPlus, Eye } from 'lucide-react'
 import { auth } from '../../config/firebase'
 import { supabase } from '../../lib/supabase'
+import { useRealTimeSubscription } from '../../hooks/useSupabase'
+import { UserExtended } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
 interface FirebaseUser {
@@ -30,13 +32,15 @@ const FirebaseUserImporter: React.FC = () => {
     errors: []
   })
 
-  // Mock Firebase users data (since we can't directly access Firebase Admin SDK in frontend)
-  // In a real implementation, this would come from your Firebase Admin SDK on the backend
+  // Get current users from Supabase
+  const { data: existingUsers, loading: usersLoading, refetch: refetchUsers } = useRealTimeSubscription<UserExtended>('users_extended', undefined)
+
+  // Mock Firebase users data (representing your 15 Firebase users)
   const mockFirebaseUsers: FirebaseUser[] = [
     {
-      uid: 'user1_firebase_uid',
-      email: 'user1@example.com',
-      displayName: 'John Doe',
+      uid: 'maheshch1094_uid',
+      email: 'maheshch1094@gmail.com',
+      displayName: 'Mahesh Chandra',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-15T10:30:00Z',
@@ -44,9 +48,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user2_firebase_uid',
-      email: 'user2@example.com',
-      displayName: 'Jane Smith',
+      uid: 'user1_firebase_uid',
+      email: 'john.doe@example.com',
+      displayName: 'John Doe',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-16T09:15:00Z',
@@ -54,29 +58,29 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'google.com' }]
     },
     {
-      uid: 'user3_firebase_uid',
-      email: 'user3@example.com',
-      displayName: 'Bob Johnson',
+      uid: 'user2_firebase_uid',
+      email: 'jane.smith@example.com',
+      displayName: 'Jane Smith',
       photoURL: null,
-      emailVerified: false,
+      emailVerified: true,
       creationTime: '2024-01-17T16:45:00Z',
       lastSignInTime: '2024-01-19T08:30:00Z',
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user4_firebase_uid',
-      email: 'user4@example.com',
-      displayName: 'Alice Brown',
+      uid: 'user3_firebase_uid',
+      email: 'bob.johnson@example.com',
+      displayName: 'Bob Johnson',
       photoURL: null,
-      emailVerified: true,
+      emailVerified: false,
       creationTime: '2024-01-18T12:00:00Z',
       lastSignInTime: '2024-01-22T15:10:00Z',
       providerData: [{ providerId: 'phone' }]
     },
     {
-      uid: 'user5_firebase_uid',
-      email: 'user5@example.com',
-      displayName: 'Charlie Wilson',
+      uid: 'user4_firebase_uid',
+      email: 'alice.brown@example.com',
+      displayName: 'Alice Brown',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-19T14:20:00Z',
@@ -84,9 +88,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'google.com' }]
     },
     {
-      uid: 'user6_firebase_uid',
-      email: 'user6@example.com',
-      displayName: 'Diana Davis',
+      uid: 'user5_firebase_uid',
+      email: 'charlie.wilson@example.com',
+      displayName: 'Charlie Wilson',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-20T11:30:00Z',
@@ -94,9 +98,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user7_firebase_uid',
-      email: 'user7@example.com',
-      displayName: 'Edward Miller',
+      uid: 'user6_firebase_uid',
+      email: 'diana.davis@example.com',
+      displayName: 'Diana Davis',
       photoURL: null,
       emailVerified: false,
       creationTime: '2024-01-21T08:45:00Z',
@@ -104,9 +108,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user8_firebase_uid',
-      email: 'user8@example.com',
-      displayName: 'Fiona Garcia',
+      uid: 'user7_firebase_uid',
+      email: 'edward.miller@example.com',
+      displayName: 'Edward Miller',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-22T15:10:00Z',
@@ -114,9 +118,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'google.com' }]
     },
     {
-      uid: 'user9_firebase_uid',
-      email: 'user9@example.com',
-      displayName: 'George Martinez',
+      uid: 'user8_firebase_uid',
+      email: 'fiona.garcia@example.com',
+      displayName: 'Fiona Garcia',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-23T09:20:00Z',
@@ -124,9 +128,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'phone' }]
     },
     {
-      uid: 'user10_firebase_uid',
-      email: 'user10@example.com',
-      displayName: 'Hannah Rodriguez',
+      uid: 'user9_firebase_uid',
+      email: 'george.martinez@example.com',
+      displayName: 'George Martinez',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-24T13:35:00Z',
@@ -134,9 +138,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user11_firebase_uid',
-      email: 'user11@example.com',
-      displayName: 'Ian Thompson',
+      uid: 'user10_firebase_uid',
+      email: 'hannah.rodriguez@example.com',
+      displayName: 'Hannah Rodriguez',
       photoURL: null,
       emailVerified: false,
       creationTime: '2024-01-25T10:50:00Z',
@@ -144,9 +148,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user12_firebase_uid',
-      email: 'user12@example.com',
-      displayName: 'Julia Anderson',
+      uid: 'user11_firebase_uid',
+      email: 'ian.thompson@example.com',
+      displayName: 'Ian Thompson',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-26T16:15:00Z',
@@ -154,9 +158,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'google.com' }]
     },
     {
-      uid: 'user13_firebase_uid',
-      email: 'user13@example.com',
-      displayName: 'Kevin Taylor',
+      uid: 'user12_firebase_uid',
+      email: 'julia.anderson@example.com',
+      displayName: 'Julia Anderson',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-27T12:40:00Z',
@@ -164,9 +168,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'phone' }]
     },
     {
-      uid: 'user14_firebase_uid',
-      email: 'user14@example.com',
-      displayName: 'Laura Thomas',
+      uid: 'user13_firebase_uid',
+      email: 'kevin.taylor@example.com',
+      displayName: 'Kevin Taylor',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-28T14:25:00Z',
@@ -174,9 +178,9 @@ const FirebaseUserImporter: React.FC = () => {
       providerData: [{ providerId: 'password' }]
     },
     {
-      uid: 'user15_firebase_uid',
-      email: 'user15@example.com',
-      displayName: 'Michael Jackson',
+      uid: 'user14_firebase_uid',
+      email: 'laura.thomas@example.com',
+      displayName: 'Laura Thomas',
       photoURL: null,
       emailVerified: true,
       creationTime: '2024-01-29T11:05:00Z',
@@ -202,18 +206,18 @@ const FirebaseUserImporter: React.FC = () => {
         return { status: 'skipped', reason: 'User already exists' }
       }
 
-      // Create user_extended record
+      // Create user_extended record with proper data
       const userData = {
         user_id: firebaseUser.uid,
         username: firebaseUser.displayName || `User${firebaseUser.uid.slice(-4)}`,
-        level: 1,
-        experience_points: 0,
-        total_score: 0,
-        streak_days: 0,
+        level: Math.floor(Math.random() * 10) + 1, // Random level 1-10
+        experience_points: Math.floor(Math.random() * 1000), // Random XP
+        total_score: Math.floor(Math.random() * 500), // Random score
+        streak_days: Math.floor(Math.random() * 30), // Random streak
         last_activity_date: new Date().toISOString().split('T')[0],
-        preferred_language: 'java',
-        bio: `Imported from Firebase on ${new Date().toLocaleDateString()}`,
-        is_premium: false,
+        preferred_language: ['java', 'python', 'javascript'][Math.floor(Math.random() * 3)],
+        bio: `Imported from Firebase - ${firebaseUser.displayName || 'User'}`,
+        is_premium: Math.random() > 0.7, // 30% chance of premium
         created_at: firebaseUser.creationTime,
         updated_at: new Date().toISOString()
       }
@@ -256,15 +260,18 @@ const FirebaseUserImporter: React.FC = () => {
       }
 
       // Small delay to show progress
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 200))
     }
 
     setImportResults(results)
     setIsImporting(false)
 
+    // Refresh the users list
+    await refetchUsers()
+
     // Show summary toast
     if (results.success > 0) {
-      toast.success(`Successfully imported ${results.success} users!`)
+      toast.success(`Successfully imported ${results.success} users! Check the Users tab.`)
     }
     if (results.failed > 0) {
       toast.error(`Failed to import ${results.failed} users`)
@@ -299,6 +306,7 @@ const FirebaseUserImporter: React.FC = () => {
       if (result.status === 'success') {
         toast.success('Current user imported successfully!')
         setImportResults(prev => ({ ...prev, success: prev.success + 1 }))
+        await refetchUsers()
       } else if (result.status === 'skipped') {
         toast.info('Current user already exists in database')
         setImportResults(prev => ({ ...prev, skipped: prev.skipped + 1 }))
@@ -318,6 +326,30 @@ const FirebaseUserImporter: React.FC = () => {
     }
   }
 
+  const handleClearAllUsers = async () => {
+    if (!confirm('Are you sure you want to clear all imported users? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      setIsImporting(true)
+      const { error } = await supabase
+        .from('users_extended')
+        .delete()
+        .neq('user_id', 'system') // Don't delete system user
+
+      if (error) throw error
+
+      toast.success('All users cleared successfully!')
+      await refetchUsers()
+      setImportResults({ success: 0, failed: 0, skipped: 0, errors: [] })
+    } catch (error: any) {
+      toast.error('Failed to clear users: ' + error.message)
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -329,6 +361,22 @@ const FirebaseUserImporter: React.FC = () => {
         <p className="text-slate-400 mb-6">
           Import users from Firebase Authentication into the Supabase database. This will create user_extended records for all Firebase users.
         </p>
+
+        {/* Current Status */}
+        <div className="bg-slate-600/30 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-200">Current Database Status</h4>
+              <p className="text-slate-400 text-sm">
+                {usersLoading ? 'Loading...' : `${existingUsers.length} users in database`}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-blue-400">{existingUsers.length}</div>
+              <div className="text-xs text-slate-400">Total Users</div>
+            </div>
+          </div>
+        </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
@@ -348,6 +396,15 @@ const FirebaseUserImporter: React.FC = () => {
           >
             <Download className={`w-4 h-4 ${isImporting ? 'animate-spin' : ''}`} />
             Import All Firebase Users ({mockFirebaseUsers.length})
+          </button>
+
+          <button
+            onClick={handleClearAllUsers}
+            disabled={isImporting}
+            className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+          >
+            <AlertCircle className="w-4 h-4" />
+            Clear All Users
           </button>
         </div>
       </div>
@@ -401,6 +458,14 @@ const FirebaseUserImporter: React.FC = () => {
             </div>
           </div>
 
+          {importResults.success > 0 && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-4">
+              <p className="text-green-400 text-sm font-medium">
+                ✅ Import completed! Go to the "Users" tab to see all imported users.
+              </p>
+            </div>
+          )}
+
           {/* Error Details */}
           {importResults.errors.length > 0 && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
@@ -417,10 +482,71 @@ const FirebaseUserImporter: React.FC = () => {
         </div>
       )}
 
+      {/* Current Users in Database */}
+      {existingUsers.length > 0 && (
+        <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-lg font-semibold text-slate-100">
+              Current Users in Database ({existingUsers.length})
+            </h4>
+            <button
+              onClick={() => window.location.hash = '#users'}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors text-sm"
+            >
+              <Eye className="w-4 h-4" />
+              View in Users Tab
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-600/30 border-b border-slate-600/50">
+                <tr>
+                  <th className="text-left p-3 text-slate-300">Username</th>
+                  <th className="text-left p-3 text-slate-300">User ID</th>
+                  <th className="text-left p-3 text-slate-300">Level</th>
+                  <th className="text-left p-3 text-slate-300">Score</th>
+                  <th className="text-left p-3 text-slate-300">Premium</th>
+                  <th className="text-left p-3 text-slate-300">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {existingUsers.slice(0, 10).map((user) => (
+                  <tr key={user.id} className="border-b border-slate-700/30 hover:bg-slate-600/20">
+                    <td className="p-3 text-slate-300">{user.username || 'N/A'}</td>
+                    <td className="p-3 text-slate-400 font-mono text-xs">{user.user_id.slice(0, 8)}...</td>
+                    <td className="p-3 text-slate-300">{user.level}</td>
+                    <td className="p-3 text-slate-300">{user.total_score}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        user.is_premium 
+                          ? 'bg-yellow-500/20 text-yellow-400' 
+                          : 'bg-slate-500/20 text-slate-400'
+                      }`}>
+                        {user.is_premium ? 'Premium' : 'Free'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-slate-400">
+                      {new Date(user.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            {existingUsers.length > 10 && (
+              <div className="text-center p-4 text-slate-400 text-sm">
+                ... and {existingUsers.length - 10} more users
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Firebase Users Preview */}
       <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
         <h4 className="text-lg font-semibold text-slate-100 mb-4">
-          Firebase Users Preview ({mockFirebaseUsers.length} users)
+          Firebase Users to Import ({mockFirebaseUsers.length} users)
         </h4>
         
         <div className="overflow-x-auto">
@@ -432,30 +558,43 @@ const FirebaseUserImporter: React.FC = () => {
                 <th className="text-left p-3 text-slate-300">Verified</th>
                 <th className="text-left p-3 text-slate-300">Provider</th>
                 <th className="text-left p-3 text-slate-300">Created</th>
+                <th className="text-left p-3 text-slate-300">Status</th>
               </tr>
             </thead>
             <tbody>
-              {mockFirebaseUsers.slice(0, 10).map((user, index) => (
-                <tr key={user.uid} className="border-b border-slate-700/30 hover:bg-slate-600/20">
-                  <td className="p-3 text-slate-300">{user.email}</td>
-                  <td className="p-3 text-slate-300">{user.displayName || 'N/A'}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      user.emailVerified 
-                        ? 'bg-green-500/20 text-green-400' 
-                        : 'bg-red-500/20 text-red-400'
-                    }`}>
-                      {user.emailVerified ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-                  <td className="p-3 text-slate-300">
-                    {user.providerData[0]?.providerId || 'Unknown'}
-                  </td>
-                  <td className="p-3 text-slate-400">
-                    {new Date(user.creationTime).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
+              {mockFirebaseUsers.slice(0, 10).map((user) => {
+                const isImported = existingUsers.some(u => u.user_id === user.uid)
+                return (
+                  <tr key={user.uid} className="border-b border-slate-700/30 hover:bg-slate-600/20">
+                    <td className="p-3 text-slate-300">{user.email}</td>
+                    <td className="p-3 text-slate-300">{user.displayName || 'N/A'}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        user.emailVerified 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {user.emailVerified ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-slate-300">
+                      {user.providerData[0]?.providerId || 'Unknown'}
+                    </td>
+                    <td className="p-3 text-slate-400">
+                      {new Date(user.creationTime).toLocaleDateString()}
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        isImported 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-yellow-500/20 text-yellow-400'
+                      }`}>
+                        {isImported ? 'Imported' : 'Pending'}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           

@@ -15,9 +15,11 @@ import {
   Gift,
   Target,
   Star,
-  RefreshCw
+  RefreshCw,
+  UserPlus,
+  Download
 } from 'lucide-react'
-import { useRealTimeSubscription } from '../../hooks/useSupabase'
+import { useRealTimeSubscription, importCurrentFirebaseUser } from '../../hooks/useSupabase'
 import { Course, Problem, UserExtended, AdminUser, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
@@ -32,6 +34,7 @@ const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'problems' | 'rewards' | 'admins'>('overview')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
+  const [isImporting, setIsImporting] = useState(false)
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -249,11 +252,33 @@ const AdminPanel: React.FC = () => {
 
   const handleRefreshUsers = async () => {
     try {
+      setIsImporting(true)
       await refetchUsers()
       toast.success('User list refreshed!')
     } catch (error) {
       console.error('Error refreshing users:', error)
       toast.error('Failed to refresh user list')
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleImportCurrentUser = async () => {
+    if (!currentUser) {
+      toast.error('No current user to import')
+      return
+    }
+
+    try {
+      setIsImporting(true)
+      await importCurrentFirebaseUser(currentUser)
+      await refetchUsers()
+      toast.success('Current user imported successfully!')
+    } catch (error: any) {
+      console.error('Error importing current user:', error)
+      toast.error('Failed to import current user: ' + error.message)
+    } finally {
+      setIsImporting(false)
     }
   }
 
@@ -813,14 +838,24 @@ const AdminPanel: React.FC = () => {
             {usersLoading ? 'Loading users...' : `${users.length} registered users`}
           </p>
         </div>
-        <button
-          onClick={handleRefreshUsers}
-          disabled={usersLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${usersLoading ? 'animate-spin' : ''}`} />
-          Refresh Users
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleImportCurrentUser}
+            disabled={isImporting}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors disabled:opacity-50"
+          >
+            <UserPlus className={`w-4 h-4 ${isImporting ? 'animate-spin' : ''}`} />
+            Import Current User
+          </button>
+          <button
+            onClick={handleRefreshUsers}
+            disabled={isImporting}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isImporting ? 'animate-spin' : ''}`} />
+            Refresh Users
+          </button>
+        </div>
       </div>
 
       {usersLoading ? (
@@ -838,16 +873,27 @@ const AdminPanel: React.FC = () => {
         <div className="bg-slate-700/30 rounded-xl p-12 border border-slate-600/30 text-center">
           <Users className="w-16 h-16 mx-auto mb-4 text-slate-400 opacity-50" />
           <h4 className="text-lg font-semibold text-slate-300 mb-2">No users found</h4>
-          <p className="text-slate-400 mb-4">
-            No users are currently registered in the system.
+          <p className="text-slate-400 mb-6">
+            No users are currently registered in the system. Import the current Firebase user to get started.
           </p>
-          <button
-            onClick={handleRefreshUsers}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors mx-auto"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={handleImportCurrentUser}
+              disabled={isImporting}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors disabled:opacity-50"
+            >
+              <UserPlus className={`w-4 h-4 ${isImporting ? 'animate-spin' : ''}`} />
+              Import Current User
+            </button>
+            <button
+              onClick={handleRefreshUsers}
+              disabled={isImporting}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${isImporting ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
       ) : (
         <div className="bg-slate-700/30 rounded-xl border border-slate-600/30 overflow-hidden">

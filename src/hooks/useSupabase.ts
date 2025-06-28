@@ -16,10 +16,7 @@ export function useSupabaseAuth() {
 // Helper function to setup Supabase authentication with Firebase token
 async function setupSupabaseAuth(currentUser: any) {
   try {
-    // Get the Firebase ID token (JWT)
-    const idToken = await currentUser.getIdToken(true) // Force refresh
-    
-    console.log('Firebase user authenticated:', currentUser.uid)
+    console.log('Setting up Supabase auth for Firebase user:', currentUser.uid)
 
     // Create user_extended record if it doesn't exist
     await createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')
@@ -28,10 +25,28 @@ async function setupSupabaseAuth(currentUser: any) {
   }
 }
 
-// Helper function to create user_extended record
+// Enhanced helper function to create user_extended record
 async function createUserExtendedRecord(userId: string, email: string, displayName: string) {
   try {
-    // First try to call the database function
+    console.log('Creating/updating user_extended record for:', userId)
+    
+    // First check if user already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users_extended')
+      .select('id, user_id')
+      .eq('user_id', userId)
+      .single()
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Error checking existing user:', checkError)
+    }
+
+    if (existingUser) {
+      console.log('User already exists in users_extended:', userId)
+      return
+    }
+
+    // Try to call the database function first
     const { error: functionError } = await supabase.rpc('handle_firebase_user_creation', {
       firebase_uid: userId,
       user_email: email,
@@ -41,29 +56,40 @@ async function createUserExtendedRecord(userId: string, email: string, displayNa
     if (functionError) {
       console.error('Error calling user creation function:', functionError)
       
-      // Fallback: try direct insert
+      // Fallback: try direct insert with service role permissions
+      const userData = {
+        user_id: userId,
+        username: displayName || `User${userId.slice(-4)}`,
+        level: 1,
+        experience_points: 0,
+        total_score: 0,
+        streak_days: 0,
+        last_activity_date: new Date().toISOString().split('T')[0],
+        preferred_language: 'java',
+        is_premium: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
       const { error: insertError } = await supabase
         .from('users_extended')
-        .upsert([{
-          user_id: userId,
-          username: displayName || `User${userId.slice(-4)}`,
-          level: 1,
-          experience_points: 0,
-          total_score: 0,
-          streak_days: 0,
-          last_activity_date: new Date().toISOString().split('T')[0],
-          preferred_language: 'java',
-          is_premium: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }], {
-          onConflict: 'user_id'
-        })
+        .insert([userData])
 
       if (insertError) {
         console.error('Error creating user_extended record:', insertError)
+        
+        // Try upsert as final fallback
+        const { error: upsertError } = await supabase
+          .from('users_extended')
+          .upsert([userData], { onConflict: 'user_id' })
+
+        if (upsertError) {
+          console.error('Error upserting user_extended record:', upsertError)
+        } else {
+          console.log('Successfully upserted user_extended record for:', userId)
+        }
       } else {
-        console.log('Created user_extended record for:', userId)
+        console.log('Successfully created user_extended record for:', userId)
       }
     } else {
       console.log('Successfully called user creation function for:', userId)
@@ -367,7 +393,7 @@ export function useRealTimeSubscription<T>(
         // Try to fetch from Supabase first
         let query = supabase.from(table).select('*')
         
-        if (userId) {
+        if (userId && table !== 'courses' && table !== 'problems' && table !== 'leaderboard') {
           query = query.eq('user_id', userId)
         }
         
@@ -404,9 +430,41 @@ export function useRealTimeSubscription<T>(
     fetchData()
   }, [table, filter, userId])
 
-  const refetch = () => {
+  const refetch = async () => {
     setLoading(true)
-    // The useEffect will handle the refetch
+    // Re-run the fetch logic
+    try {
+      let query = supabase.from(table).select('*')
+      
+      if (userId && table !== 'courses' && table !== 'problems' && table !== 'leaderboard') {
+        query = query.eq('user_id', userId)
+      }
+      
+      if (filter) {
+        const [column, operator, value] = filter.split('.')
+        query = query.filter(column, operator, value)
+      }
+
+      const orderColumn = getOrderColumn(table)
+      const { data: supabaseData, error: supabaseError } = await query.order(orderColumn, { ascending: false })
+      
+      if (supabaseError) {
+        console.warn(`Supabase error for ${table}, using mock data:`, supabaseError)
+        const mockData = generateMockData<T>(table, userId)
+        setData(mockData)
+      } else {
+        setData(supabaseData || [])
+      }
+      
+      setError(null)
+    } catch (err: any) {
+      console.warn(`Error fetching ${table}, using mock data:`, err)
+      const mockData = generateMockData<T>(table, userId)
+      setData(mockData)
+      setError(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return { data, loading, error, refetch }
@@ -484,4 +542,23 @@ export function useAnalyticsData(userId?: string) {
   }
 
   return { tasks, notes, activities, metrics, loading }
+}
+
+// Function to manually import current Firebase user to Supabase
+export async function importCurrentFirebaseUser(currentUser: any) {
+  if (!currentUser) {
+    throw new Error('No current user to import')
+  }
+
+  try {
+    await createUserExtendedRecord(
+      currentUser.uid,
+      currentUser.email || '',
+      currentUser.displayName || ''
+    )
+    return { success: true, message: 'User imported successfully' }
+  } catch (error) {
+    console.error('Error importing user:', error)
+    throw error
+  }
 }

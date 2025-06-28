@@ -2,6 +2,105 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
+export function useSupabaseAuth() {
+  const { currentUser } = useAuth()
+  
+  useEffect(() => {
+    if (currentUser) {
+      // Setup Supabase authentication with Firebase token
+      setupSupabaseAuth(currentUser)
+    }
+  }, [currentUser])
+}
+
+// Helper function to setup Supabase authentication with Firebase token
+async function setupSupabaseAuth(currentUser: any) {
+  try {
+    console.log('Setting up Supabase auth for Firebase user:', currentUser.uid)
+
+    // Create user_extended record if it doesn't exist
+    await createUserExtendedRecord(currentUser.uid, currentUser.email || '', currentUser.displayName || '')
+  } catch (error) {
+    console.error('Error setting up Supabase auth:', error)
+  }
+}
+
+// Enhanced helper function to create user_extended record
+async function createUserExtendedRecord(userId: string, email: string, displayName: string) {
+  try {
+    console.log('Creating/updating user_extended record for:', userId)
+    
+    // First check if user already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users_extended')
+      .select('id, user_id')
+      .eq('user_id', userId)
+      .maybeSingle() // Use maybeSingle() instead of single() to handle zero rows gracefully
+
+    // Only log actual errors, not the expected "no rows" case
+    if (checkError) {
+      console.error('Error checking existing user:', checkError)
+      return
+    }
+
+    if (existingUser) {
+      console.log('User already exists in users_extended:', userId)
+      return
+    }
+
+    // Try to call the database function first
+    const { error: functionError } = await supabase.rpc('handle_firebase_user_creation', {
+      firebase_uid: userId,
+      user_email: email,
+      display_name: displayName
+    })
+
+    if (functionError) {
+      console.error('Error calling user creation function:', functionError)
+      
+      // Fallback: try direct insert with service role permissions
+      const userData = {
+        user_id: userId,
+        username: displayName || `User${userId.slice(-4)}`,
+        level: 1,
+        experience_points: 0,
+        total_score: 0,
+        streak_days: 0,
+        last_activity_date: new Date().toISOString().split('T')[0],
+        preferred_language: 'java',
+        is_premium: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      const { error: insertError } = await supabase
+        .from('users_extended')
+        .insert([userData])
+
+      if (insertError) {
+        console.error('Error creating user_extended record:', insertError)
+        
+        // Try upsert as final fallback
+        const { error: upsertError } = await supabase
+          .from('users_extended')
+          .upsert([userData], { onConflict: 'user_id' })
+
+        if (upsertError) {
+          console.error('Error upserting user_extended record:', upsertError)
+        } else {
+          console.log('Successfully upserted user_extended record for:', userId)
+        }
+      } else {
+        console.log('Successfully created user_extended record for:', userId)
+      }
+    } else {
+      console.log('Successfully called user creation function for:', userId)
+    }
+  } catch (error) {
+    console.error('Error in createUserExtendedRecord:', error)
+  }
+}
+
 // Helper function to get the correct timestamp column for ordering
 function getOrderColumn(table: string): string {
   const orderColumns: Record<string, string> = {
@@ -257,37 +356,7 @@ function generateMockData<T>(table: string, userId?: string): T[] {
         submitted_at: '2024-01-11T16:45:00Z'
       }
     ],
-    redemption_requests: [],
-    lessons: [
-      {
-        id: '1',
-        course_id: '1',
-        title: 'Introduction to React',
-        content: 'React is a JavaScript library for building user interfaces...',
-        video_url: 'https://example.com/videos/intro-to-react.mp4',
-        code_examples: [],
-        quiz_questions: [],
-        order_index: 1,
-        duration_minutes: 30,
-        is_published: true,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '2',
-        course_id: '1',
-        title: 'React Components',
-        content: 'Components are the building blocks of React applications...',
-        video_url: 'https://example.com/videos/react-components.mp4',
-        code_examples: [],
-        quiz_questions: [],
-        order_index: 2,
-        duration_minutes: 45,
-        is_published: true,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z'
-      }
-    ]
+    redemption_requests: []
   }
 
   return (mockData[table] || []) as T[]
@@ -345,18 +414,6 @@ export function useRealTimeSubscription<T>(
 
   useEffect(() => {
     fetchData()
-
-    // Set up real-time subscription
-    const subscription = supabase
-      .channel(`${table}-changes`)
-      .on('postgres_changes', { event: '*', schema: 'public', table }, () => {
-        fetchData()
-      })
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
   }, [table, filter, userId])
 
   const refetch = async () => {
@@ -440,74 +497,17 @@ export function useAnalyticsData(userId?: string) {
   return { tasks, notes, activities, metrics, loading }
 }
 
-// Function to create user profile in Supabase
-export async function createUserProfile(userId: string, email: string, displayName: string) {
-  try {
-    // Check if profile already exists
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single()
-    
-    if (existingProfile) {
-      console.log('Profile already exists')
-      return
-    }
-    
-    // Create profile
-    const { error } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          user_id: userId,
-          username: email.split('@')[0],
-          full_name: displayName || email.split('@')[0],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ])
-    
-    if (error) throw error
-    
-    // Create extended user record
-    const { error: extendedError } = await supabase
-      .from('users_extended')
-      .insert([
-        {
-          user_id: userId,
-          username: email.split('@')[0],
-          level: 1,
-          experience_points: 0,
-          total_score: 0,
-          streak_days: 0,
-          last_activity_date: new Date().toISOString().split('T')[0],
-          preferred_language: 'java',
-          is_premium: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ])
-    
-    if (extendedError) throw extendedError
-    
-    console.log('User profile created successfully')
-  } catch (error) {
-    console.error('Error creating user profile:', error)
-  }
-}
-
-// Function to manually import current user to Supabase
+// Function to manually import current Firebase user to Supabase
 export async function importCurrentFirebaseUser(currentUser: any) {
   if (!currentUser) {
     throw new Error('No current user to import')
   }
 
   try {
-    await createUserProfile(
-      currentUser.id,
+    await createUserExtendedRecord(
+      currentUser.uid,
       currentUser.email || '',
-      currentUser.user_metadata?.full_name || ''
+      currentUser.displayName || ''
     )
     return { success: true, message: 'User imported successfully' }
   } catch (error) {

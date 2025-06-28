@@ -1,14 +1,19 @@
-require('dotenv').config();
-
 const express = require('express');
-const admin = require('firebase-admin');
 const cors = require('cors');
+const admin = require('firebase-admin');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Middleware
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
+app.use(express.json());
+
 // Initialize Firebase Admin SDK
-// For production, use environment variables for the service account
 const serviceAccount = {
   type: "service_account",
   project_id: "portfolio-56be7",
@@ -22,43 +27,40 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
 };
 
-// Initialize Firebase Admin if not already initialized
-if (!admin.apps.length) {
+try {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    projectId: "portfolio-56be7"
+    projectId: 'portfolio-56be7'
   });
+  console.log('Firebase Admin SDK initialized successfully');
+} catch (error) {
+  console.error('Error initializing Firebase Admin SDK:', error);
 }
 
-// Middleware
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'https://your-frontend-domain.com'],
-  credentials: true
-}));
-app.use(express.json());
+// Admin emails that can access the API
+const ADMIN_EMAILS = ['maheshch1094@gmail.com'];
 
-// Middleware to verify admin access
-const verifyAdminAccess = async (req, res, next) => {
+// Middleware to verify Firebase ID token and check admin status
+const verifyAdminToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+      return res.status(401).json({ error: 'No token provided' });
     }
 
-    const idToken = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const token = authHeader.split('Bearer ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
     
     // Check if user is admin
-    const adminEmails = ['maheshch1094@gmail.com', 'admin@codecafe.com', 'superadmin@codecafe.com'];
-    if (!adminEmails.includes(decodedToken.email?.toLowerCase())) {
-      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    if (!ADMIN_EMAILS.includes(decodedToken.email)) {
+      return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
     }
 
     req.user = decodedToken;
     next();
   } catch (error) {
-    console.error('Error verifying admin access:', error);
-    res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    console.error('Token verification error:', error);
+    res.status(401).json({ error: 'Invalid token' });
   }
 };
 
@@ -67,260 +69,171 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// GET /api/admin/users - List all Firebase users
-app.get('/api/admin/users', verifyAdminAccess, async (req, res) => {
+// Get all users
+app.get('/api/admin/users', verifyAdminToken, async (req, res) => {
   try {
-    const maxResults = parseInt(req.query.limit) || 1000;
-    const nextPageToken = req.query.pageToken;
-
-    const listUsersResult = await admin.auth().listUsers(maxResults, nextPageToken);
-    
-    const users = listUsersResult.users.map(userRecord => ({
-      uid: userRecord.uid,
-      email: userRecord.email,
-      displayName: userRecord.displayName,
-      photoURL: userRecord.photoURL,
-      disabled: userRecord.disabled,
-      emailVerified: userRecord.emailVerified,
-      phoneNumber: userRecord.phoneNumber,
-      creationTime: userRecord.metadata.creationTime,
-      lastSignInTime: userRecord.metadata.lastSignInTime,
-      lastRefreshTime: userRecord.metadata.lastRefreshTime,
-      providerData: userRecord.providerData.map(provider => ({
-        providerId: provider.providerId,
-        uid: provider.uid,
-        email: provider.email,
-        displayName: provider.displayName,
-        photoURL: provider.photoURL
-      })),
-      customClaims: userRecord.customClaims || {},
-      tokensValidAfterTime: userRecord.tokensValidAfterTime
+    const listUsersResult = await admin.auth().listUsers(1000);
+    const users = listUsersResult.users.map(user => ({
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      phoneNumber: user.phoneNumber,
+      emailVerified: user.emailVerified,
+      disabled: user.disabled,
+      metadata: {
+        creationTime: user.metadata.creationTime,
+        lastSignInTime: user.metadata.lastSignInTime
+      },
+      customClaims: user.customClaims || {}
     }));
-
-    res.json({
-      users,
-      pageToken: listUsersResult.pageToken,
-      totalUsers: users.length
-    });
+    
+    res.json({ users, total: users.length });
   } catch (error) {
     console.error('Error listing users:', error);
-    res.status(500).json({ 
-      error: 'Failed to list users',
-      details: error.message 
-    });
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
-// GET /api/admin/users/:uid - Get a single user's details
-app.get('/api/admin/users/:uid', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
+// Get user by UID
+app.get('/api/admin/users/:uid', verifyAdminToken, async (req, res) => {
   try {
-    const userRecord = await admin.auth().getUser(uid);
+    const { uid } = req.params;
+    const user = await admin.auth().getUser(uid);
+    
     res.json({
-      uid: userRecord.uid,
-      email: userRecord.email,
-      displayName: userRecord.displayName,
-      photoURL: userRecord.photoURL,
-      disabled: userRecord.disabled,
-      emailVerified: userRecord.emailVerified,
-      phoneNumber: userRecord.phoneNumber,
-      creationTime: userRecord.metadata.creationTime,
-      lastSignInTime: userRecord.metadata.lastSignInTime,
-      lastRefreshTime: userRecord.metadata.lastRefreshTime,
-      providerData: userRecord.providerData,
-      customClaims: userRecord.customClaims || {},
-      tokensValidAfterTime: userRecord.tokensValidAfterTime
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      phoneNumber: user.phoneNumber,
+      emailVerified: user.emailVerified,
+      disabled: user.disabled,
+      metadata: {
+        creationTime: user.metadata.creationTime,
+        lastSignInTime: user.metadata.lastSignInTime
+      },
+      customClaims: user.customClaims || {}
     });
   } catch (error) {
-    if (error.code === 'auth/user-not-found') {
-      res.status(404).json({ error: `User with UID ${uid} not found` });
-    } else {
-      console.error(`Error fetching user ${uid}:`, error);
-      res.status(500).json({ 
-        error: `Failed to fetch user ${uid}`,
-        details: error.message 
-      });
-    }
+    console.error('Error getting user:', error);
+    res.status(404).json({ error: 'User not found' });
   }
 });
 
-// POST /api/admin/users/:uid/disable - Disable a user
-app.post('/api/admin/users/:uid/disable', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
+// Create new user
+app.post('/api/admin/users', verifyAdminToken, async (req, res) => {
   try {
-    await admin.auth().updateUser(uid, { disabled: true });
-    res.json({ 
-      message: `User ${uid} disabled successfully`,
-      uid,
-      disabled: true 
-    });
-  } catch (error) {
-    console.error(`Error disabling user ${uid}:`, error);
-    res.status(500).json({ 
-      error: `Failed to disable user ${uid}`,
-      details: error.message 
-    });
-  }
-});
-
-// POST /api/admin/users/:uid/enable - Enable a user
-app.post('/api/admin/users/:uid/enable', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
-  try {
-    await admin.auth().updateUser(uid, { disabled: false });
-    res.json({ 
-      message: `User ${uid} enabled successfully`,
-      uid,
-      disabled: false 
-    });
-  } catch (error) {
-    console.error(`Error enabling user ${uid}:`, error);
-    res.status(500).json({ 
-      error: `Failed to enable user ${uid}`,
-      details: error.message 
-    });
-  }
-});
-
-// DELETE /api/admin/users/:uid - Delete a user
-app.delete('/api/admin/users/:uid', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
-  try {
-    await admin.auth().deleteUser(uid);
-    res.json({ 
-      message: `User ${uid} deleted successfully`,
-      uid 
-    });
-  } catch (error) {
-    console.error(`Error deleting user ${uid}:`, error);
-    res.status(500).json({ 
-      error: `Failed to delete user ${uid}`,
-      details: error.message 
-    });
-  }
-});
-
-// PUT /api/admin/users/:uid - Update user properties
-app.put('/api/admin/users/:uid', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
-  const { email, displayName, phoneNumber, emailVerified, disabled } = req.body;
-  
-  try {
-    const updateData = {};
-    if (email !== undefined) updateData.email = email;
-    if (displayName !== undefined) updateData.displayName = displayName;
-    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
-    if (emailVerified !== undefined) updateData.emailVerified = emailVerified;
-    if (disabled !== undefined) updateData.disabled = disabled;
-
-    const userRecord = await admin.auth().updateUser(uid, updateData);
-    res.json({
-      message: `User ${uid} updated successfully`,
-      user: {
-        uid: userRecord.uid,
-        email: userRecord.email,
-        displayName: userRecord.displayName,
-        disabled: userRecord.disabled,
-        emailVerified: userRecord.emailVerified
-      }
-    });
-  } catch (error) {
-    console.error(`Error updating user ${uid}:`, error);
-    res.status(500).json({ 
-      error: `Failed to update user ${uid}`,
-      details: error.message 
-    });
-  }
-});
-
-// POST /api/admin/users - Create a new user
-app.post('/api/admin/users', verifyAdminAccess, async (req, res) => {
-  const { email, password, displayName, phoneNumber, emailVerified = false } = req.body;
-  
-  try {
+    const { email, password, displayName, phoneNumber } = req.body;
+    
     const userRecord = await admin.auth().createUser({
       email,
       password,
       displayName,
       phoneNumber,
-      emailVerified
+      emailVerified: false
     });
-
+    
     res.status(201).json({
-      message: 'User created successfully',
-      user: {
-        uid: userRecord.uid,
-        email: userRecord.email,
-        displayName: userRecord.displayName,
-        emailVerified: userRecord.emailVerified
-      }
+      uid: userRecord.uid,
+      email: userRecord.email,
+      displayName: userRecord.displayName,
+      phoneNumber: userRecord.phoneNumber
     });
   } catch (error) {
     console.error('Error creating user:', error);
-    res.status(500).json({ 
-      error: 'Failed to create user',
-      details: error.message 
-    });
+    res.status(400).json({ error: error.message });
   }
 });
 
-// POST /api/admin/users/:uid/custom-claims - Set custom claims
-app.post('/api/admin/users/:uid/custom-claims', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
-  const { customClaims } = req.body;
-  
+// Update user
+app.put('/api/admin/users/:uid', verifyAdminToken, async (req, res) => {
   try {
+    const { uid } = req.params;
+    const updates = req.body;
+    
+    const userRecord = await admin.auth().updateUser(uid, updates);
+    
+    res.json({
+      uid: userRecord.uid,
+      email: userRecord.email,
+      displayName: userRecord.displayName,
+      phoneNumber: userRecord.phoneNumber,
+      emailVerified: userRecord.emailVerified,
+      disabled: userRecord.disabled
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete user
+app.delete('/api/admin/users/:uid', verifyAdminToken, async (req, res) => {
+  try {
+    const { uid } = req.params;
+    await admin.auth().deleteUser(uid);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Disable user
+app.post('/api/admin/users/:uid/disable', verifyAdminToken, async (req, res) => {
+  try {
+    const { uid } = req.params;
+    await admin.auth().updateUser(uid, { disabled: true });
+    res.json({ message: 'User disabled successfully' });
+  } catch (error) {
+    console.error('Error disabling user:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Enable user
+app.post('/api/admin/users/:uid/enable', verifyAdminToken, async (req, res) => {
+  try {
+    const { uid } = req.params;
+    await admin.auth().updateUser(uid, { disabled: false });
+    res.json({ message: 'User enabled successfully' });
+  } catch (error) {
+    console.error('Error enabling user:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Set custom claims
+app.post('/api/admin/users/:uid/custom-claims', verifyAdminToken, async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { customClaims } = req.body;
+    
     await admin.auth().setCustomUserClaims(uid, customClaims);
-    res.json({
-      message: `Custom claims set for user ${uid}`,
-      uid,
-      customClaims
-    });
+    res.json({ message: 'Custom claims set successfully' });
   } catch (error) {
-    console.error(`Error setting custom claims for user ${uid}:`, error);
-    res.status(500).json({ 
-      error: `Failed to set custom claims for user ${uid}`,
-      details: error.message 
-    });
+    console.error('Error setting custom claims:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 
-// POST /api/admin/users/:uid/revoke-tokens - Revoke refresh tokens
-app.post('/api/admin/users/:uid/revoke-tokens', verifyAdminAccess, async (req, res) => {
-  const uid = req.params.uid;
-  
+// Revoke refresh tokens
+app.post('/api/admin/users/:uid/revoke-tokens', verifyAdminToken, async (req, res) => {
   try {
+    const { uid } = req.params;
     await admin.auth().revokeRefreshTokens(uid);
-    res.json({
-      message: `Refresh tokens revoked for user ${uid}`,
-      uid
-    });
+    res.json({ message: 'Refresh tokens revoked successfully' });
   } catch (error) {
-    console.error(`Error revoking tokens for user ${uid}:`, error);
-    res.status(500).json({ 
-      error: `Failed to revoke tokens for user ${uid}`,
-      details: error.message 
-    });
+    console.error('Error revoking tokens:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    details: error.message 
-  });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Firebase Admin API server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Firebase Admin API server running on port ${PORT}`);
 });
-
-module.exports = app;

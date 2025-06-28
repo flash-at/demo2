@@ -83,6 +83,16 @@ const AdminPanel: React.FC = () => {
     { id: 'admins', label: 'Admins', icon: Shield }
   ]
 
+  // Listen for navigation events from FirebaseUserImporter
+  React.useEffect(() => {
+    const handleNavigateToUsers = () => {
+      setActiveTab('users')
+    }
+
+    window.addEventListener('navigate-to-users', handleNavigateToUsers)
+    return () => window.removeEventListener('navigate-to-users', handleNavigateToUsers)
+  }, [])
+
   // Course Management
   const handleCourseSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -889,24 +899,14 @@ const AdminPanel: React.FC = () => {
             </div>
             <p className="text-slate-300 mb-4">
               You're currently logged in as <strong>{currentUser?.displayName || currentUser?.email}</strong>. 
-              Click the button below to import your Firebase user account into the system.
+              Go to the "Import Users" tab to import all Firebase users into the system.
             </p>
             <button
-              onClick={handleImportCurrentUser}
-              disabled={isImporting}
-              className="flex items-center gap-2 px-6 py-3 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors disabled:opacity-50 mx-auto text-lg font-semibold"
+              onClick={() => setActiveTab('import')}
+              className="flex items-center gap-2 px-6 py-3 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500/30 transition-colors mx-auto text-lg font-semibold"
             >
-              {isImporting ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Importing...
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-5 h-5" />
-                  Import My Account
-                </>
-              )}
+              <Download className="w-5 h-5" />
+              Go to Import Users
             </button>
           </div>
           

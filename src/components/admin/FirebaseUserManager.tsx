@@ -20,7 +20,11 @@ import {
   Activity,
   TrendingUp,
   UserPlus,
-  Settings
+  Settings,
+  Database,
+  Server,
+  Wifi,
+  WifiOff
 } from 'lucide-react'
 import { useFirebaseUsers, useFirebaseUserStats, FirebaseUserData } from '../../hooks/useFirebaseUsers'
 import { useAuth } from '../../contexts/AuthContext'
@@ -150,17 +154,11 @@ const FirebaseUserManager: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-          <div className="animate-pulse">
-            <div className="h-6 bg-slate-700 rounded mb-4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-20 bg-slate-700 rounded"></div>
-              ))}
-            </div>
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="h-16 bg-slate-700 rounded"></div>
-              ))}
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 className="text-lg font-semibold text-slate-100 mb-2">Loading Firebase Users</h3>
+              <p className="text-slate-400">Connecting to Firebase Authentication...</p>
             </div>
           </div>
         </div>
@@ -172,16 +170,41 @@ const FirebaseUserManager: React.FC = () => {
     return (
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
         <div className="text-center py-8">
-          <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-400 opacity-50" />
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">Error Loading Users</h3>
-          <p className="text-slate-400 mb-4">{error}</p>
-          <button
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors mx-auto"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Retry
-          </button>
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <WifiOff className="w-8 h-8 text-red-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-300 mb-2">Backend API Required</h3>
+          <p className="text-slate-400 mb-6 max-w-md mx-auto">
+            To manage your real Firebase users, you need a backend API with Firebase Admin SDK. 
+            Currently showing simulated data representing your 15 Firebase users.
+          </p>
+          
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6 max-w-lg mx-auto">
+            <h4 className="text-blue-400 font-semibold mb-2">To connect to real Firebase users:</h4>
+            <ol className="text-sm text-slate-300 text-left space-y-1">
+              <li>1. Create a backend API (Node.js, Python, etc.)</li>
+              <li>2. Install Firebase Admin SDK</li>
+              <li>3. Add endpoints: GET /api/admin/users, POST /api/admin/users/:uid/disable, etc.</li>
+              <li>4. Use Firebase Admin SDK to list and manage users</li>
+            </ol>
+          </div>
+          
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={refetch}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry Connection
+            </button>
+            <button
+              onClick={() => window.open('https://firebase.google.com/docs/admin/setup', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+            >
+              <Database className="w-4 h-4" />
+              Firebase Admin Docs
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -194,10 +217,18 @@ const FirebaseUserManager: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h3 className="text-2xl font-bold text-slate-100 mb-2">Firebase User Management</h3>
-            <p className="text-slate-300">Manage all Firebase Authentication users directly</p>
+            <p className="text-slate-300">
+              {error ? 'Simulated Firebase users (Backend API needed for real data)' : 'Manage all Firebase Authentication users directly'}
+            </p>
           </div>
           
           <div className="flex items-center gap-3">
+            {error && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-yellow-500/20 text-yellow-400 rounded-lg border border-yellow-500/30">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">Demo Mode</span>
+              </div>
+            )}
             <button
               onClick={refetch}
               disabled={loading}
@@ -210,6 +241,22 @@ const FirebaseUserManager: React.FC = () => {
         </div>
       </div>
 
+      {/* Connection Status */}
+      <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${error ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
+            <span className="text-slate-300 font-medium">
+              {error ? 'Simulated Firebase Connection' : 'Connected to Firebase'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-400">
+            <Database className="w-4 h-4" />
+            <span>{users.length} users loaded</span>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
@@ -218,7 +265,7 @@ const FirebaseUserManager: React.FC = () => {
             <h4 className="font-semibold text-slate-100">Total Users</h4>
           </div>
           <div className="text-2xl font-bold text-blue-400">{stats.totalUsers}</div>
-          <div className="text-sm text-slate-400">All registered users</div>
+          <div className="text-sm text-slate-400">Firebase Auth users</div>
         </div>
 
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
@@ -353,6 +400,11 @@ const FirebaseUserManager: React.FC = () => {
                         <div>
                           <div className="font-medium text-slate-100">
                             {user.displayName || 'No name'}
+                            {user.uid === currentUser?.uid && (
+                              <span className="ml-2 px-2 py-1 text-xs bg-orange-500/20 text-orange-400 rounded-full">
+                                You
+                              </span>
+                            )}
                           </div>
                           <div className="text-sm text-slate-400">{user.email}</div>
                           <div className="text-xs text-slate-500 font-mono">{user.uid.slice(0, 8)}...</div>
@@ -432,7 +484,7 @@ const FirebaseUserManager: React.FC = () => {
                         ) : (
                           <button
                             onClick={() => handleDisableUser(user.uid)}
-                            disabled={isPerformingAction}
+                            disabled={isPerformingAction || user.uid === currentUser?.uid}
                             className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors rounded-lg hover:bg-yellow-500/20 disabled:opacity-50"
                             title="Disable user"
                           >
@@ -508,6 +560,35 @@ const FirebaseUserManager: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Backend Setup Guide */}
+      {error && (
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+          <h4 className="text-lg font-semibold text-slate-100 mb-4">🔧 Setup Real Firebase User Management</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h5 className="font-semibold text-slate-200 mb-2">Backend API Endpoints Needed:</h5>
+              <ul className="text-sm text-slate-400 space-y-1">
+                <li>• <code className="text-blue-400">GET /api/admin/users</code> - List all users</li>
+                <li>• <code className="text-yellow-400">POST /api/admin/users/:uid/disable</code> - Disable user</li>
+                <li>• <code className="text-green-400">POST /api/admin/users/:uid/enable</code> - Enable user</li>
+                <li>• <code className="text-red-400">DELETE /api/admin/users/:uid</code> - Delete user</li>
+                <li>• <code className="text-purple-400">POST /api/admin/users/:uid/claims</code> - Set custom claims</li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-semibold text-slate-200 mb-2">Firebase Admin SDK Setup:</h5>
+              <ul className="text-sm text-slate-400 space-y-1">
+                <li>• Install: <code className="text-blue-400">npm install firebase-admin</code></li>
+                <li>• Initialize with service account key</li>
+                <li>• Use <code className="text-green-400">admin.auth().listUsers()</code></li>
+                <li>• Implement user management operations</li>
+                <li>• Add authentication middleware</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -24,7 +24,7 @@ import {
 import { useRealTimeSubscription, importCurrentFirebaseUser } from '../../hooks/useSupabase'
 import { Course, Problem, AdminUser, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import FirebaseUserManager from './FirebaseUserManager'
+import DirectFirebaseUserManager from './DirectFirebaseUserManager'
 import toast from 'react-hot-toast'
 
 const AdminPanel: React.FC = () => {
@@ -255,11 +255,11 @@ const AdminPanel: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/50">
         <div className="flex items-center gap-3 mb-4">
-          <Users className="w-8 h-8 text-blue-400" />
+          <Users className="w-8 h-8 text-orange-400" />
           <h3 className="text-lg font-semibold text-slate-100">Firebase Users</h3>
         </div>
-        <div className="text-3xl font-bold text-blue-400">15</div>
-        <div className="text-sm text-slate-400 mt-2">Managed via Firebase Auth</div>
+        <div className="text-3xl font-bold text-orange-400">15</div>
+        <div className="text-sm text-slate-400 mt-2">Direct Firebase connection</div>
       </div>
 
       <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/50">
@@ -858,7 +858,7 @@ const AdminPanel: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview': return renderOverview()
-      case 'users': return <FirebaseUserManager />
+      case 'users': return <DirectFirebaseUserManager />
       case 'courses': return renderCourses()
       case 'problems': return renderProblems()
       case 'rewards': return renderRewards()

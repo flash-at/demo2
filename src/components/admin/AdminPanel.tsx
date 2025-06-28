@@ -22,9 +22,9 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { useRealTimeSubscription, importCurrentFirebaseUser } from '../../hooks/useSupabase'
-import { Course, Problem, AdminUser, supabase } from '../../lib/supabase'
+import { Course, Problem, UserExtended, AdminUser, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import DirectFirebaseUserManager from './DirectFirebaseUserManager'
+import FirebaseUserManager from './FirebaseUserManager'
 import toast from 'react-hot-toast'
 
 const AdminPanel: React.FC = () => {
@@ -33,7 +33,7 @@ const AdminPanel: React.FC = () => {
   const { data: problems, loading: problemsLoading } = useRealTimeSubscription<Problem>('problems', undefined)
   const { data: admins, loading: adminsLoading } = useRealTimeSubscription<AdminUser>('admin_users', undefined)
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'problems' | 'rewards' | 'admins'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'problems' | 'rewards' | 'admins'>('users')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
 
@@ -255,11 +255,11 @@ const AdminPanel: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/50">
         <div className="flex items-center gap-3 mb-4">
-          <Users className="w-8 h-8 text-orange-400" />
+          <Users className="w-8 h-8 text-blue-400" />
           <h3 className="text-lg font-semibold text-slate-100">Firebase Users</h3>
         </div>
-        <div className="text-3xl font-bold text-orange-400">15</div>
-        <div className="text-sm text-slate-400 mt-2">Direct Firebase connection</div>
+        <div className="text-3xl font-bold text-blue-400">Real-time</div>
+        <div className="text-sm text-slate-400 mt-2">Managed via Firebase Admin API</div>
       </div>
 
       <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/50">
@@ -727,7 +727,7 @@ const AdminPanel: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <input
               type="text"
-              placeholder="Firebase User UID"
+              placeholder="User ID (Firebase UID)"
               value={rewardForm.user_id}
               onChange={(e) => setRewardForm({ ...rewardForm, user_id: e.target.value })}
               className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
@@ -787,7 +787,7 @@ const AdminPanel: React.FC = () => {
 
       <div className="bg-slate-700/30 rounded-xl p-6 border border-slate-600/30">
         <p className="text-slate-400 text-center py-8">
-          Reward management interface - Create and assign rewards to Firebase users for achievements and milestones.
+          Reward management interface - Create and assign rewards to users for achievements and milestones.
         </p>
       </div>
     </div>
@@ -858,7 +858,7 @@ const AdminPanel: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview': return renderOverview()
-      case 'users': return <DirectFirebaseUserManager />
+      case 'users': return <FirebaseUserManager />
       case 'courses': return renderCourses()
       case 'problems': return renderProblems()
       case 'rewards': return renderRewards()

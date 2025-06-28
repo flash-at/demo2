@@ -1,18 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project-url.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
-    },
-  },
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -232,37 +223,4 @@ export interface Analytics {
   metric_value: number
   date: string
   created_at: string
-}
-
-// Helper function to set up admin session
-export const setupAdminSession = async (userEmail: string) => {
-  try {
-    // Create a custom session for admin operations
-    const { data, error } = await supabase.auth.setSession({
-      access_token: `admin_${userEmail}`,
-      refresh_token: `admin_refresh_${userEmail}`,
-      expires_in: 3600,
-      expires_at: Date.now() + 3600000,
-      token_type: 'bearer',
-      user: {
-        id: userEmail,
-        email: userEmail,
-        user_metadata: {
-          email: userEmail,
-          role: 'admin'
-        },
-        app_metadata: {
-          role: 'admin'
-        },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-    })
-    
-    return { data, error }
-  } catch (error) {
-    console.error('Error setting up admin session:', error)
-    return { data: null, error }
-  }
 }

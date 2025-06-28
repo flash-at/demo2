@@ -12,6 +12,28 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
+    host: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          firebase: ['firebase/app', 'firebase/auth'],
+          supabase: ['@supabase/supabase-js'],
+          charts: ['recharts'],
+          icons: ['lucide-react'],
+          forms: ['react-hook-form'],
+          utils: ['date-fns', 'clsx', 'tailwind-merge']
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'firebase/auth', '@supabase/supabase-js']
   }
 })

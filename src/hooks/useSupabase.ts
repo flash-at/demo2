@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import toast from 'react-hot-toast'
 
 export function useSupabaseAuth() {
   const { currentUser } = useAuth()
@@ -19,10 +18,6 @@ async function setupSupabaseAuth(currentUser: any) {
   try {
     // Get the Firebase ID token (JWT)
     const idToken = await currentUser.getIdToken(true) // Force refresh
-    
-    // Note: We cannot directly use Firebase ID tokens with supabase.auth.setSession
-    // as Supabase expects its own JWT format. For now, we'll skip the session setup
-    // and rely on RLS policies that can work with Firebase authentication.
     
     console.log('Firebase user authenticated:', currentUser.uid)
 
@@ -89,7 +84,7 @@ function getOrderColumn(table: string): string {
   return orderColumns[table] || 'created_at'
 }
 
-// Mock data generator
+// Mock data generator with improved data quality
 function generateMockData<T>(table: string, userId?: string): T[] {
   const mockData: Record<string, any[]> = {
     tasks: [
@@ -315,7 +310,41 @@ function generateMockData<T>(table: string, userId?: string): T[] {
         created_at: '2024-01-11T00:00:00Z',
         claimed_at: null
       }
-    ]
+    ],
+    users_extended: [
+      {
+        id: '1',
+        user_id: userId || 'mock-user',
+        username: 'demo_user',
+        level: 5,
+        experience_points: 1250,
+        total_score: 625,
+        streak_days: 7,
+        last_activity_date: new Date().toISOString().split('T')[0],
+        preferred_language: 'java',
+        bio: 'Learning to code with CodeCafe!',
+        is_premium: false,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: new Date().toISOString()
+      }
+    ],
+    submissions: [
+      {
+        id: '1',
+        user_id: userId || 'mock-user',
+        problem_id: '1',
+        language: 'javascript',
+        code: 'function twoSum(nums, target) { /* solution */ }',
+        status: 'accepted',
+        execution_time_ms: 85,
+        memory_used_mb: 42,
+        test_cases_passed: 10,
+        total_test_cases: 10,
+        points_earned: 10,
+        submitted_at: '2024-01-11T16:45:00Z'
+      }
+    ],
+    redemption_requests: []
   }
 
   return (mockData[table] || []) as T[]

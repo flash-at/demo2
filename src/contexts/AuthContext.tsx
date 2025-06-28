@@ -17,11 +17,11 @@ import { auth } from '../config/firebase'
 interface AuthContextType {
   currentUser: User | null
   loading: boolean
-  signup: (email: string, password: string, displayName: string) => Promise<void>
-  login: (email: string, password: string) => Promise<void>
+  signup: (email: string, password: string, displayName: string) => Promise<any>
+  login: (email: string, password: string) => Promise<any>
   logout: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
-  loginWithGoogle: () => Promise<void>
+  loginWithGoogle: () => Promise<any>
   resendEmailVerification: () => Promise<void>
   refreshUser: () => Promise<void>
 }

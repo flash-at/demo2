@@ -1,6 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import LoadingSpinner from './LoadingSpinner'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -14,7 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <LoadingSpinner size="lg" className="mx-auto mb-4 text-orange-500" />
           <p className="text-slate-400">Loading...</p>
         </div>
       </div>

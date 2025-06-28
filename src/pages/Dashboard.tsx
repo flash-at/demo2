@@ -659,7 +659,7 @@ const Dashboard: React.FC = () => {
                 <Settings className="w-5 h-5" />
               </button>
 
-              {/* Admin Login Link */}
+              {/* Admin Login Link - Only show for non-admin users */}
               {!isAdmin && (
                 <button
                   onClick={() => navigate('/admin-login')}

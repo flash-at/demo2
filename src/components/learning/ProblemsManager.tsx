@@ -1146,7 +1146,7 @@ int main() {
                 <input
                   type="text"
                   value={typeof problemForm.tags === 'string' ? problemForm.tags : problemForm.tags.join(', ')}
-                  onChange={(e) => setProblemForm({...problemForm, tags: e.target.value})}
+                  onChange={(e) => setProblemForm({...problemForm, tags: e.target.value.split(',').map(tag => tag.trim())})}
                   className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
                   placeholder="arrays, sorting, two-pointer"
                 />

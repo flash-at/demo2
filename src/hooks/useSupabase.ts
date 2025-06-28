@@ -95,6 +95,7 @@ async function createUserExtendedRecord(userId: string, email: string, displayNa
       }
     } else {
       console.log('Successfully called user creation function for:', userId)
+    
     }
   } catch (error) {
     console.error('Error in createUserExtendedRecord:', error)
@@ -395,7 +396,7 @@ export function useRealTimeSubscription<T>(
         console.warn(`Supabase error for ${table}, using mock data:`, supabaseError)
         // Use mock data as fallback
         const mockData = generateMockData<T>(table, userId)
-        setData(mockData)
+        setData(mockData as T[])
       } else {
         setData(supabaseData || [])
       }
@@ -405,7 +406,7 @@ export function useRealTimeSubscription<T>(
       console.warn(`Error fetching ${table}, using mock data:`, err)
       // Use mock data as fallback
       const mockData = generateMockData<T>(table, userId)
-      setData(mockData)
+      setData(mockData as T[])
       setError(null) // Don't show error since we have fallback data
     } finally {
       setLoading(false)
@@ -450,7 +451,7 @@ export function useSupabaseQuery<T>(
           console.warn(`Supabase error for ${table}, using mock data:`, error)
           // Use mock data as fallback
           const mockData = generateMockData<T>(table)
-          setData(mockData)
+          setData(mockData as T[])
         } else {
           setData(result || [])
         }
@@ -460,7 +461,7 @@ export function useSupabaseQuery<T>(
         console.warn(`Error fetching ${table}, using mock data:`, err)
         // Use mock data as fallback
         const mockData = generateMockData<T>(table)
-        setData(mockData)
+        setData(mockData as T[])
         setError(null)
       } finally {
         setLoading(false)

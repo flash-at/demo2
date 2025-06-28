@@ -19,7 +19,8 @@ import {
   ArrowUpDown,
   MoreHorizontal,
   FileText,
-  Layers
+  Layers,
+  Play
 } from 'lucide-react'
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
 import { Course, Lesson, supabase } from '../../lib/supabase'

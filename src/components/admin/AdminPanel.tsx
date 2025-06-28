@@ -247,9 +247,14 @@ const AdminPanel: React.FC = () => {
     setShowAddForm(true)
   }
 
-  const handleRefreshUsers = () => {
-    refetchUsers()
-    toast.success('User list refreshed!')
+  const handleRefreshUsers = async () => {
+    try {
+      await refetchUsers()
+      toast.success('User list refreshed!')
+    } catch (error) {
+      console.error('Error refreshing users:', error)
+      toast.error('Failed to refresh user list')
+    }
   }
 
   const renderOverview = () => (
@@ -287,10 +292,10 @@ const AdminPanel: React.FC = () => {
 
       <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/50">
         <div className="flex items-center gap-3 mb-4">
-          <Shield className="w-8 h-8 text-orange-400" />
+          <Shield className="w-8 h-8 text-blue-400" />
           <h3 className="text-lg font-semibold text-slate-100">Admins</h3>
         </div>
-        <div className="text-3xl font-bold text-orange-400">{admins.length}</div>
+        <div className="text-3xl font-bold text-blue-400">{admins.length}</div>
         <div className="text-sm text-slate-400 mt-2">Active administrators</div>
       </div>
     </div>
@@ -345,14 +350,14 @@ const AdminPanel: React.FC = () => {
               placeholder="Course title"
               value={courseForm.title}
               onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               required
             />
             
             <select
               value={courseForm.category}
               onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value as any })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
             >
               <option value="java">Java</option>
               <option value="python">Python</option>
@@ -367,7 +372,7 @@ const AdminPanel: React.FC = () => {
             placeholder="Course description"
             value={courseForm.description}
             onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
-            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 mb-4"
+            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 mb-4"
             rows={3}
           />
 
@@ -375,7 +380,7 @@ const AdminPanel: React.FC = () => {
             <select
               value={courseForm.difficulty}
               onChange={(e) => setCourseForm({ ...courseForm, difficulty: e.target.value as any })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
             >
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
@@ -387,7 +392,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Duration (hours)"
               value={courseForm.duration_hours}
               onChange={(e) => setCourseForm({ ...courseForm, duration_hours: parseInt(e.target.value) || 0 })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               min="0"
             />
 
@@ -397,7 +402,7 @@ const AdminPanel: React.FC = () => {
                   type="checkbox"
                   checked={courseForm.is_premium}
                   onChange={(e) => setCourseForm({ ...courseForm, is_premium: e.target.checked })}
-                  className="rounded border-slate-500 text-orange-500 focus:ring-orange-500"
+                  className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
                 />
                 Premium
               </label>
@@ -407,7 +412,7 @@ const AdminPanel: React.FC = () => {
                   type="checkbox"
                   checked={courseForm.is_published}
                   onChange={(e) => setCourseForm({ ...courseForm, is_published: e.target.checked })}
-                  className="rounded border-slate-500 text-orange-500 focus:ring-orange-500"
+                  className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
                 />
                 Published
               </label>
@@ -517,14 +522,14 @@ const AdminPanel: React.FC = () => {
               placeholder="Problem title"
               value={problemForm.title}
               onChange={(e) => setProblemForm({ ...problemForm, title: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               required
             />
             
             <select
               value={problemForm.category}
               onChange={(e) => setProblemForm({ ...problemForm, category: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
             >
               <option value="arrays">Arrays</option>
               <option value="strings">Strings</option>
@@ -541,7 +546,7 @@ const AdminPanel: React.FC = () => {
             placeholder="Problem description"
             value={problemForm.description}
             onChange={(e) => setProblemForm({ ...problemForm, description: e.target.value })}
-            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 mb-4"
+            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 mb-4"
             rows={4}
             required
           />
@@ -551,7 +556,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Sample input"
               value={problemForm.sample_input}
               onChange={(e) => setProblemForm({ ...problemForm, sample_input: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               rows={3}
             />
             
@@ -559,7 +564,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Sample output"
               value={problemForm.sample_output}
               onChange={(e) => setProblemForm({ ...problemForm, sample_output: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               rows={3}
             />
           </div>
@@ -568,7 +573,7 @@ const AdminPanel: React.FC = () => {
             <select
               value={problemForm.difficulty}
               onChange={(e) => setProblemForm({ ...problemForm, difficulty: e.target.value as any })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -580,7 +585,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Points"
               value={problemForm.points}
               onChange={(e) => setProblemForm({ ...problemForm, points: parseInt(e.target.value) || 10 })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               min="1"
             />
 
@@ -589,7 +594,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Time limit (ms)"
               value={problemForm.time_limit_ms}
               onChange={(e) => setProblemForm({ ...problemForm, time_limit_ms: parseInt(e.target.value) || 1000 })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               min="100"
             />
 
@@ -598,7 +603,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Memory (MB)"
               value={problemForm.memory_limit_mb}
               onChange={(e) => setProblemForm({ ...problemForm, memory_limit_mb: parseInt(e.target.value) || 128 })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               min="64"
             />
 
@@ -607,7 +612,7 @@ const AdminPanel: React.FC = () => {
                 type="checkbox"
                 checked={problemForm.is_published}
                 onChange={(e) => setProblemForm({ ...problemForm, is_published: e.target.checked })}
-                className="rounded border-slate-500 text-orange-500 focus:ring-orange-500"
+                className="rounded border-slate-500 text-blue-500 focus:ring-blue-500"
               />
               Published
             </label>
@@ -729,7 +734,7 @@ const AdminPanel: React.FC = () => {
             <select
               value={rewardForm.user_id}
               onChange={(e) => setRewardForm({ ...rewardForm, user_id: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
               required
             >
               <option value="">Select User</option>
@@ -743,7 +748,7 @@ const AdminPanel: React.FC = () => {
             <select
               value={rewardForm.type}
               onChange={(e) => setRewardForm({ ...rewardForm, type: e.target.value as any })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
             >
               <option value="points">Points</option>
               <option value="badge">Badge</option>
@@ -758,7 +763,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Reward title"
               value={rewardForm.title}
               onChange={(e) => setRewardForm({ ...rewardForm, title: e.target.value })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               required
             />
             
@@ -767,7 +772,7 @@ const AdminPanel: React.FC = () => {
               placeholder="Value"
               value={rewardForm.value}
               onChange={(e) => setRewardForm({ ...rewardForm, value: parseInt(e.target.value) || 0 })}
-              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+              className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500"
               min="0"
               required
             />
@@ -777,7 +782,7 @@ const AdminPanel: React.FC = () => {
             placeholder="Reward description"
             value={rewardForm.description}
             onChange={(e) => setRewardForm({ ...rewardForm, description: e.target.value })}
-            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 mb-4"
+            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 mb-4"
             rows={3}
           />
 
@@ -863,7 +868,7 @@ const AdminPanel: React.FC = () => {
                   <tr key={user.id} className="border-b border-slate-700/30 hover:bg-slate-700/20">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm font-bold">
                             {(user.username || user.user_id || 'U')[0].toUpperCase()}
                           </span>
@@ -883,7 +888,7 @@ const AdminPanel: React.FC = () => {
                         <span className="text-slate-300 font-medium">{user.level || 1}</span>
                         <div className="w-8 h-2 bg-slate-600 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-orange-400 rounded-full transition-all duration-300"
+                            className="h-full bg-blue-400 rounded-full transition-all duration-300"
                             style={{ width: `${((user.experience_points || 0) % 100)}%` }}
                           ></div>
                         </div>
@@ -998,7 +1003,7 @@ const AdminPanel: React.FC = () => {
                 <tr key={admin.id} className="border-b border-slate-700/30 hover:bg-slate-700/20">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                         <Shield className="w-4 h-4 text-white" />
                       </div>
                       <div>
@@ -1010,7 +1015,7 @@ const AdminPanel: React.FC = () => {
                   <td className="p-4">
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       admin.role === 'super_admin' ? 'bg-red-500/20 text-red-400' :
-                      admin.role === 'admin' ? 'bg-orange-500/20 text-orange-400' :
+                      admin.role === 'admin' ? 'bg-blue-500/20 text-blue-400' :
                       'bg-blue-500/20 text-blue-400'
                     }`}>
                       {admin.role.replace('_', ' ')}
@@ -1070,7 +1075,7 @@ const AdminPanel: React.FC = () => {
       {/* Header */}
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
         <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-8 h-8 text-orange-400" />
+          <Shield className="w-8 h-8 text-blue-400" />
           <div>
             <h2 className="text-2xl font-bold text-slate-100">Admin Panel</h2>
             <p className="text-slate-400">Manage users, content, and platform settings</p>
@@ -1091,7 +1096,7 @@ const AdminPanel: React.FC = () => {
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                     : 'bg-slate-700/30 text-slate-300 hover:bg-slate-700/50 border border-slate-600/30'
                 }`}
               >

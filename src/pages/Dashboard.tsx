@@ -165,7 +165,7 @@ const Dashboard: React.FC = () => {
   const renderOverview = () => (
     <div className="space-y-6 md:space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-orange-500/20 via-red-500/20 to-pink-500/20 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-8 border border-orange-500/30">
+      <div className="bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-indigo-500/20 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-8 border border-blue-500/30">
         <div className="flex flex-col lg:flex-row items-center justify-between">
           <div className="text-center lg:text-left mb-6 lg:mb-0">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-100 mb-2">
@@ -180,7 +180,7 @@ const Dashboard: React.FC = () => {
                 <span className="text-sm text-slate-300">Level {Math.floor(metrics.totalScore / 100) + 1}</span>
               </div>
               <div className="flex items-center gap-2 bg-slate-800/50 px-3 md:px-4 py-2 rounded-full">
-                <Star className="w-4 h-4 text-orange-400" />
+                <Star className="w-4 h-4 text-blue-400" />
                 <span className="text-sm text-slate-300">{metrics.totalScore} Points</span>
               </div>
               <div className="flex items-center gap-2 bg-slate-800/50 px-3 md:px-4 py-2 rounded-full">
@@ -191,7 +191,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="relative">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
               {currentUser?.photoURL ? (
                 <img 
                   src={currentUser.photoURL} 
@@ -215,7 +215,7 @@ const Dashboard: React.FC = () => {
           onClick={() => setActiveTab('tasks')}
           className="bg-slate-800/50 backdrop-blur-sm rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
         >
-          <CheckSquare className="w-6 h-6 md:w-8 md:h-8 text-orange-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+          <CheckSquare className="w-6 h-6 md:w-8 md:h-8 text-blue-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
           <h3 className="font-semibold text-slate-100 mb-1 text-sm md:text-base">Quick Task</h3>
           <p className="text-xs md:text-sm text-slate-400">Add new task</p>
         </button>
@@ -242,7 +242,7 @@ const Dashboard: React.FC = () => {
           onClick={() => setActiveTab('courses')}
           className="bg-slate-800/50 backdrop-blur-sm rounded-lg md:rounded-xl p-4 md:p-6 border border-slate-700/50 hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
         >
-          <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-blue-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+          <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-indigo-400 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
           <h3 className="font-semibold text-slate-100 mb-1 text-sm md:text-base">Learn</h3>
           <p className="text-xs md:text-sm text-slate-400">Take courses</p>
         </button>
@@ -260,7 +260,7 @@ const Dashboard: React.FC = () => {
               <h3 className="text-base md:text-lg font-semibold text-slate-100">Recent Tasks</h3>
               <button
                 onClick={() => setActiveTab('tasks')}
-                className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
                 View All →
               </button>
@@ -307,7 +307,7 @@ const Dashboard: React.FC = () => {
                 <span className="text-sm md:text-base text-slate-300">Solve 1 problem</span>
                 <div className="flex items-center gap-2">
                   <div className="w-12 md:w-16 bg-slate-700 rounded-full h-2">
-                    <div className="bg-orange-400 h-2 rounded-full" style={{ width: '0%' }}></div>
+                    <div className="bg-blue-400 h-2 rounded-full" style={{ width: '0%' }}></div>
                   </div>
                   <span className="text-xs text-slate-400">0/1</span>
                 </div>
@@ -321,7 +321,7 @@ const Dashboard: React.FC = () => {
               <h3 className="text-base md:text-lg font-semibold text-slate-100">Recent Achievements</h3>
               <button
                 onClick={() => setActiveTab('rewards')}
-                className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
                 View All →
               </button>
@@ -486,10 +486,10 @@ const Dashboard: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-slate-700/50">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 CodeCafe
               </h1>
             </div>
@@ -504,7 +504,7 @@ const Dashboard: React.FC = () => {
           {/* User Profile */}
           <div className="p-4 md:p-6 border-b border-slate-700/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                 {currentUser.photoURL ? (
                   <img 
                     src={currentUser.photoURL} 
@@ -523,7 +523,7 @@ const Dashboard: React.FC = () => {
                   {currentUser.email}
                 </p>
                 {isAdmin && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-orange-500/20 text-orange-400 rounded-full mt-1">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full mt-1">
                     <Shield className="w-3 h-3" />
                     Admin
                   </span>
@@ -539,7 +539,7 @@ const Dashboard: React.FC = () => {
                   <div className="text-slate-400">Completed</div>
                 </div>
                 <div className="bg-slate-700/30 rounded p-2 text-center">
-                  <div className="text-orange-400 font-bold">{metrics.completionRate}%</div>
+                  <div className="text-blue-400 font-bold">{metrics.completionRate}%</div>
                   <div className="text-slate-400">Success Rate</div>
                 </div>
               </div>
@@ -567,7 +567,7 @@ const Dashboard: React.FC = () => {
                           }}
                           className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors ${
                             activeTab === item.id
-                              ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                               : 'text-slate-300 hover:bg-slate-700/50 hover:text-slate-100'
                           }`}
                         >
@@ -576,7 +576,7 @@ const Dashboard: React.FC = () => {
                             {item.label}
                           </div>
                           {item.badge && (
-                            <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                            <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
                               {item.badge > 99 ? '99+' : item.badge}
                             </span>
                           )}
@@ -634,7 +634,7 @@ const Dashboard: React.FC = () => {
                   placeholder="Search tasks, notes, courses..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 w-48 lg:w-64"
+                  className="pl-10 pr-4 py-2 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500 w-48 lg:w-64"
                 />
               </div>
 
@@ -663,7 +663,7 @@ const Dashboard: React.FC = () => {
               {!isAdmin && (
                 <button
                   onClick={() => navigate('/admin-login')}
-                  className="hidden sm:flex items-center gap-2 px-3 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm border border-orange-500/30 hover:bg-orange-500/30 transition-colors"
+                  className="hidden sm:flex items-center gap-2 px-3 py-2 bg-blue-500/20 text-blue-400 rounded-lg text-sm border border-blue-500/30 hover:bg-blue-500/30 transition-colors"
                 >
                   <Shield className="w-4 h-4" />
                   <span className="hidden md:inline">Admin</span>

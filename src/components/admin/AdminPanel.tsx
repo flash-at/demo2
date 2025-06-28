@@ -24,6 +24,7 @@ import {
 import { useRealTimeSubscription, importCurrentFirebaseUser } from '../../hooks/useSupabase'
 import { Course, Problem, UserExtended, AdminUser, supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import FirebaseUserImporter from './FirebaseUserImporter'
 import toast from 'react-hot-toast'
 
 const AdminPanel: React.FC = () => {
@@ -33,7 +34,7 @@ const AdminPanel: React.FC = () => {
   const { data: users, loading: usersLoading, refetch: refetchUsers } = useRealTimeSubscription<UserExtended>('users_extended', undefined)
   const { data: admins, loading: adminsLoading } = useRealTimeSubscription<AdminUser>('admin_users', undefined)
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'problems' | 'rewards' | 'admins'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'problems' | 'rewards' | 'admins' | 'import'>('overview')
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -75,6 +76,7 @@ const AdminPanel: React.FC = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'import', label: 'Import Users', icon: Download },
     { id: 'courses', label: 'Courses', icon: BookOpen },
     { id: 'problems', label: 'Problems', icon: Code },
     { id: 'rewards', label: 'Rewards', icon: Gift },
@@ -876,7 +878,7 @@ const AdminPanel: React.FC = () => {
           <Users className="w-16 h-16 mx-auto mb-4 text-slate-400 opacity-50" />
           <h4 className="text-lg font-semibold text-slate-300 mb-2">No users found</h4>
           <p className="text-slate-400 mb-6">
-            No users are currently registered in the system. Import the current Firebase user to get started.
+            No users are currently registered in the system. Import users from Firebase to get started.
           </p>
           
           {/* Prominent call-to-action */}
@@ -1117,6 +1119,7 @@ const AdminPanel: React.FC = () => {
     switch (activeTab) {
       case 'overview': return renderOverview()
       case 'users': return renderUsers()
+      case 'import': return <FirebaseUserImporter />
       case 'courses': return renderCourses()
       case 'problems': return renderProblems()
       case 'rewards': return renderRewards()

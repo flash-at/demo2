@@ -13,6 +13,23 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Check if required environment variables are set
+const requiredEnvVars = [
+  'FIREBASE_PRIVATE_KEY_ID',
+  'FIREBASE_PRIVATE_KEY',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_CLIENT_ID',
+  'FIREBASE_CLIENT_CERT_URL'
+];
+
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('Missing required environment variables:', missingEnvVars);
+  console.error('Please check your .env file and ensure all Firebase service account variables are set.');
+  process.exit(1);
+}
+
 // Initialize Firebase Admin SDK
 const serviceAccount = {
   type: "service_account",
@@ -35,6 +52,8 @@ try {
   console.log('Firebase Admin SDK initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase Admin SDK:', error);
+  console.error('Please verify your Firebase service account credentials in the .env file');
+  process.exit(1);
 }
 
 // Admin emails that can access the API

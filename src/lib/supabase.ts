@@ -240,24 +240,7 @@ export const setupAdminSession = async (userEmail: string) => {
     // Create a custom session for admin operations
     const { data, error } = await supabase.auth.setSession({
       access_token: `admin_${userEmail}`,
-      refresh_token: `admin_refresh_${userEmail}`,
-      expires_in: 3600,
-      expires_at: Date.now() + 3600000,
-      token_type: 'bearer',
-      user: {
-        id: userEmail,
-        email: userEmail,
-        user_metadata: {
-          email: userEmail,
-          role: 'admin'
-        },
-        app_metadata: {
-          role: 'admin'
-        },
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
+      refresh_token: `admin_refresh_${userEmail}`
     })
     
     return { data, error }

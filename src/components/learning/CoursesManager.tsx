@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BookOpen, Play, Clock, Star, Users, ChevronRight, Filter, Search } from 'lucide-react'
+import { BookOpen, Play, Clock, Star, Users, ChevronRight, Filter, Search, CheckCircle, Award, Calendar, Book } from 'lucide-react'
 import { useRealTimeSubscription } from '../../hooks/useSupabase'
 import { Course } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -51,6 +51,18 @@ const CoursesManager: React.FC = () => {
   const getCategoryIcon = (category: string) => {
     const cat = categories.find(c => c.value === category)
     return cat?.icon || '📚'
+  }
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'java': return 'from-blue-500/30 to-blue-600/30 border-blue-500/30'
+      case 'python': return 'from-green-500/30 to-green-600/30 border-green-500/30'
+      case 'dsa': return 'from-purple-500/30 to-purple-600/30 border-purple-500/30'
+      case 'web': return 'from-orange-500/30 to-red-500/30 border-orange-500/30'
+      case 'mobile': return 'from-cyan-500/30 to-blue-500/30 border-cyan-500/30'
+      case 'database': return 'from-emerald-500/30 to-teal-600/30 border-emerald-500/30'
+      default: return 'from-slate-500/30 to-slate-600/30 border-slate-500/30'
+    }
   }
 
   const handleStartLearning = (course: Course) => {
@@ -149,23 +161,44 @@ const CoursesManager: React.FC = () => {
               key={course.id}
               className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 overflow-hidden hover:bg-slate-700/50 transition-all duration-300 hover:scale-105 group"
             >
-              {/* Course Thumbnail */}
-              <div className="h-48 bg-gradient-to-br from-orange-500/20 to-red-500/20 relative overflow-hidden">
+              {/* Course Thumbnail - Enhanced with NxtWave-like design */}
+              <div className={`h-48 bg-gradient-to-br ${getCategoryColor(course.category)} relative overflow-hidden`}>
+                {/* Course Icon */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-6xl">{getCategoryIcon(course.category)}</span>
+                  <div className="w-20 h-20 bg-slate-800/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-4xl">{getCategoryIcon(course.category)}</span>
+                  </div>
                 </div>
-                <div className="absolute top-4 left-4">
-                  <span className={`px-2 py-1 text-xs rounded-full border ${getDifficultyColor(course.difficulty)}`}>
+                
+                {/* Course Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  <span className={`px-2 py-1 text-xs rounded-full border backdrop-blur-sm ${getDifficultyColor(course.difficulty)}`}>
                     {course.difficulty}
                   </span>
                 </div>
+                
                 {course.is_premium && (
                   <div className="absolute top-4 right-4">
-                    <span className="px-2 py-1 text-xs bg-yellow-500/20 text-yellow-400 rounded-full border border-yellow-500/30">
+                    <span className="px-2 py-1 text-xs bg-yellow-500/20 backdrop-blur-sm text-yellow-400 rounded-full border border-yellow-500/30 flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-current" />
                       Premium
                     </span>
                   </div>
                 )}
+                
+                {/* Course Stats Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1 text-slate-300">
+                      <Users className="w-3 h-3" />
+                      <span>1.2k enrolled</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-slate-300">
+                      <Star className="w-3 h-3 text-yellow-400" />
+                      <span>4.8 (120)</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Course Content */}
@@ -177,26 +210,26 @@ const CoursesManager: React.FC = () => {
                   {course.description || 'Learn the fundamentals and advanced concepts'}
                 </p>
 
-                {/* Course Stats */}
-                <div className="flex items-center gap-4 text-xs text-slate-500 mb-4">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{course.duration_hours}h</span>
+                {/* Course Features */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-300">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span>Self-paced learning</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3 h-3" />
-                    <span>1.2k students</span>
+                  <div className="flex items-center gap-2 text-sm text-slate-300">
+                    <Award className="w-4 h-4 text-purple-400" />
+                    <span>Certificate on completion</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3 h-3 text-yellow-400" />
-                    <span>4.8</span>
+                  <div className="flex items-center gap-2 text-sm text-slate-300">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <span>{course.duration_hours} hours of content</span>
                   </div>
                 </div>
 
                 {/* Action Button */}
                 <button 
                   onClick={() => handleStartLearning(course)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg transition-colors border border-orange-500/30"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
                 >
                   <Play className="w-4 h-4" />
                   Start Learning
@@ -237,17 +270,34 @@ const CoursesManager: React.FC = () => {
       {showCourseModal && selectedCourse && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 rounded-xl border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-slate-700">
+            {/* Course Header */}
+            <div className={`p-8 bg-gradient-to-r ${getCategoryColor(selectedCourse.category)}`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                    <span className="text-xl">{getCategoryIcon(selectedCourse.category)}</span>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-slate-800/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-3xl">{getCategoryIcon(selectedCourse.category)}</span>
                   </div>
-                  <h2 className="text-xl font-bold text-slate-100">{selectedCourse.title}</h2>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">{selectedCourse.title}</h2>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className={`px-2 py-1 text-xs rounded-full border backdrop-blur-sm ${getDifficultyColor(selectedCourse.difficulty)}`}>
+                        {selectedCourse.difficulty}
+                      </span>
+                      <span className="px-2 py-1 text-xs bg-blue-500/20 backdrop-blur-sm text-blue-400 rounded-full border border-blue-500/30">
+                        {selectedCourse.category}
+                      </span>
+                      {selectedCourse.is_premium && (
+                        <span className="px-2 py-1 text-xs bg-yellow-500/20 backdrop-blur-sm text-yellow-400 rounded-full border border-yellow-500/30 flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-current" />
+                          Premium
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <button
                   onClick={closeCourseModal}
-                  className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+                  className="p-2 text-white/70 hover:text-white transition-colors bg-slate-800/30 rounded-full"
                 >
                   ✕
                 </button>
@@ -255,21 +305,23 @@ const CoursesManager: React.FC = () => {
             </div>
             
             <div className="p-6">
-              <div className="flex flex-wrap gap-3 mb-6">
-                <span className={`px-2 py-1 text-xs rounded-full border ${getDifficultyColor(selectedCourse.difficulty)}`}>
-                  {selectedCourse.difficulty}
-                </span>
-                <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">
-                  {selectedCourse.category}
-                </span>
-                <span className="px-2 py-1 text-xs bg-purple-500/20 text-purple-400 rounded-full border border-purple-500/30">
-                  {selectedCourse.duration_hours} hours
-                </span>
-                {selectedCourse.is_premium && (
-                  <span className="px-2 py-1 text-xs bg-yellow-500/20 text-yellow-400 rounded-full border border-yellow-500/30">
-                    Premium
-                  </span>
-                )}
+              {/* Course Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-slate-700/30 rounded-lg p-4 text-center">
+                  <Clock className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-slate-100">{selectedCourse.duration_hours}h</div>
+                  <div className="text-xs text-slate-400">Course Duration</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 text-center">
+                  <Book className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-slate-100">12</div>
+                  <div className="text-xs text-slate-400">Modules</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 text-center">
+                  <Calendar className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <div className="text-xl font-bold text-slate-100">24/7</div>
+                  <div className="text-xs text-slate-400">Access</div>
+                </div>
               </div>
               
               <div className="prose prose-slate max-w-none">
@@ -277,81 +329,147 @@ const CoursesManager: React.FC = () => {
                 <p className="text-slate-300 mb-6">{selectedCourse.description || 'No description available for this course.'}</p>
                 
                 <h3 className="text-lg font-semibold text-slate-100 mb-4">What You'll Learn</h3>
-                <ul className="space-y-2 mb-6">
-                  <li className="flex items-start gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                  <div className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
-                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <CheckCircle className="w-3 h-3 text-green-400" />
                     </div>
                     <span className="text-slate-300">Fundamentals and core concepts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
+                  </div>
+                  <div className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
-                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <CheckCircle className="w-3 h-3 text-green-400" />
                     </div>
                     <span className="text-slate-300">Practical examples and real-world applications</span>
-                  </li>
-                  <li className="flex items-start gap-2">
+                  </div>
+                  <div className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
-                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <CheckCircle className="w-3 h-3 text-green-400" />
                     </div>
                     <span className="text-slate-300">Advanced techniques and best practices</span>
-                  </li>
-                  <li className="flex items-start gap-2">
+                  </div>
+                  <div className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
-                      <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <CheckCircle className="w-3 h-3 text-green-400" />
                     </div>
                     <span className="text-slate-300">Hands-on projects and coding exercises</span>
-                  </li>
-                </ul>
+                  </div>
+                </div>
                 
                 <h3 className="text-lg font-semibold text-slate-100 mb-4">Course Curriculum</h3>
                 <div className="space-y-3 mb-6">
-                  <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30">
-                    <h4 className="font-medium text-slate-100 mb-2">Module 1: Introduction</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Play className="w-4 h-4 text-orange-400" />
-                          <span className="text-sm text-slate-300">Getting Started</span>
-                        </div>
-                        <span className="text-xs text-slate-400">15 min</span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Play className="w-4 h-4 text-orange-400" />
-                          <span className="text-sm text-slate-300">Environment Setup</span>
-                        </div>
-                        <span className="text-xs text-slate-400">20 min</span>
-                      </li>
-                    </ul>
+                  <div className="bg-slate-700/30 rounded-lg overflow-hidden border border-slate-600/30">
+                    <div className="bg-slate-700/50 p-4 flex items-center justify-between">
+                      <h4 className="font-medium text-slate-100">Module 1: Introduction</h4>
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">4 lessons</span>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-center justify-between border-b border-slate-600/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">Getting Started</span>
+                          </div>
+                          <span className="text-xs text-slate-400">15 min</span>
+                        </li>
+                        <li className="flex items-center justify-between border-b border-slate-600/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">Environment Setup</span>
+                          </div>
+                          <span className="text-xs text-slate-400">20 min</span>
+                        </li>
+                        <li className="flex items-center justify-between border-b border-slate-600/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">Basic Concepts</span>
+                          </div>
+                          <span className="text-xs text-slate-400">25 min</span>
+                        </li>
+                        <li className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">First Exercise</span>
+                          </div>
+                          <span className="text-xs text-slate-400">30 min</span>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                   
-                  <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/30">
-                    <h4 className="font-medium text-slate-100 mb-2">Module 2: Core Concepts</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Play className="w-4 h-4 text-orange-400" />
-                          <span className="text-sm text-slate-300">Fundamentals</span>
-                        </div>
-                        <span className="text-xs text-slate-400">45 min</span>
-                      </li>
-                      <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Play className="w-4 h-4 text-orange-400" />
-                          <span className="text-sm text-slate-300">Advanced Topics</span>
-                        </div>
-                        <span className="text-xs text-slate-400">60 min</span>
-                      </li>
-                    </ul>
+                  <div className="bg-slate-700/30 rounded-lg overflow-hidden border border-slate-600/30">
+                    <div className="bg-slate-700/50 p-4 flex items-center justify-between">
+                      <h4 className="font-medium text-slate-100">Module 2: Core Concepts</h4>
+                      <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full">5 lessons</span>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-center justify-between border-b border-slate-600/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">Fundamentals</span>
+                          </div>
+                          <span className="text-xs text-slate-400">45 min</span>
+                        </li>
+                        <li className="flex items-center justify-between border-b border-slate-600/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">Advanced Topics</span>
+                          </div>
+                          <span className="text-xs text-slate-400">60 min</span>
+                        </li>
+                        <li className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-orange-400" />
+                            <span className="text-sm text-slate-300">Practical Application</span>
+                          </div>
+                          <span className="text-xs text-slate-400">90 min</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Course Features */}
+                <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600/30 mb-6">
+                  <h3 className="text-lg font-semibold text-slate-100 mb-4">Course Features</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                        <CheckCircle className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-slate-100">Self-paced Learning</h4>
+                        <p className="text-sm text-slate-400">Learn at your own pace, anytime</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <Award className="w-5 h-5 text-green-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-slate-100">Certificate</h4>
+                        <p className="text-sm text-slate-400">Earn a certificate upon completion</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <Book className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-slate-100">Comprehensive Content</h4>
+                        <p className="text-sm text-slate-400">In-depth learning materials</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                        <Users className="w-5 h-5 text-orange-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-slate-100">Community Support</h4>
+                        <p className="text-sm text-slate-400">Get help from peers and mentors</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
